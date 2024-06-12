@@ -1,0 +1,2328 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/L.Control.Locate.min.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-search.css">
+        <link rel="stylesheet" href="css/filter.css">
+<link rel="stylesheet" href="css/nouislider.min.css">
+        <link rel="stylesheet" href="css/leaflet-control-geocoder.Geocoder.css">
+        <link rel="stylesheet" href="css/leaflet-measure.css">
+        <style>
+        #map {
+            width: 750px;
+            height: 483px;
+        }
+        </style>
+        <title> Map showing School, Hospital,Bank and Worship place</title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/L.Control.Locate.min.js"></script>
+        <script src="js/multi-style-layer.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-control-geocoder.Geocoder.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        <script src="js/leaflet-search.js"></script>
+        <script src="js/tailDT.js"></script>
+<script src="js/nouislider.min.js"></script>
+<script src="js/wNumb.js"></script>
+        <script src="data/ilam_1.js"></script>
+        <script src="data/school_2.js"></script>
+        <script src="data/worship_3.js"></script>
+        <script src="data/hospital_4.js"></script>
+        <script src="data/bank_5.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+            highlightLayer.openPopup();
+        }
+        var map = L.map('map', {
+            zoomControl:true, maxZoom:28, minZoom:3
+        }).fitBounds([[26.64756043256604,87.49338117456413],[27.164361712924375,88.39461813491482]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        document.querySelector(".leaflet-popup-pane").addEventListener("load", function(event) {
+          var tagName = event.target.tagName,
+            popup = map._popup;
+          // Also check if flag is already set.
+          if (tagName === "IMG" && popup && !popup._updated) {
+            popup._updated = true; // Set flag to prevent looping.
+            popup.update();
+          }
+        }, true);
+        L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'meters',
+            secondaryLengthUnit: 'kilometers',
+            primaryAreaUnit: 'sqmeters',
+            secondaryAreaUnit: 'hectares'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0]
+        .innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0]
+        .className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_openstreetmap_0');
+        map.getPane('pane_openstreetmap_0').style.zIndex = 400;
+        var layer_openstreetmap_0 = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            pane: 'pane_openstreetmap_0',
+            opacity: 1.0,
+            attribution: '',
+            minZoom: 3,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 18
+        });
+        layer_openstreetmap_0;
+        map.addLayer(layer_openstreetmap_0);
+        function pop_ilam_1(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['OBJECTID'] !== null ? autolinker.link(feature.properties['OBJECTID'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['DISTRICT'] !== null ? autolinker.link(feature.properties['DISTRICT'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Shape_Leng'] !== null ? autolinker.link(feature.properties['Shape_Leng'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Shape_Area'] !== null ? autolinker.link(feature.properties['Shape_Area'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_ilam_1_0() {
+            return {
+                pane: 'pane_ilam_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(133,182,111,0.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_ilam_1');
+        map.getPane('pane_ilam_1').style.zIndex = 401;
+        map.getPane('pane_ilam_1').style['mix-blend-mode'] = 'normal';
+        var layer_ilam_1 = new L.geoJson(json_ilam_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_ilam_1',
+            layerName: 'layer_ilam_1',
+            pane: 'pane_ilam_1',
+            onEachFeature: pop_ilam_1,
+            style: style_ilam_1_0,
+        });
+        bounds_group.addLayer(layer_ilam_1);
+        map.addLayer(layer_ilam_1);
+        function pop_school_2(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['full_id'] !== null ? autolinker.link(feature.properties['full_id'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['osm_id'] !== null ? autolinker.link(feature.properties['osm_id'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['osm_type'] !== null ? autolinker.link(feature.properties['osm_type'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['amenity'] !== null ? autolinker.link(feature.properties['amenity'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['power'] !== null ? autolinker.link(feature.properties['power'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['description'] !== null ? autolinker.link(feature.properties['description'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['image'] !== null ? autolinker.link(feature.properties['image'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['grades'] !== null ? autolinker.link(feature.properties['grades'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['addr:housenumber'] !== null ? autolinker.link(feature.properties['addr:housenumber'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['website'] !== null ? autolinker.link(feature.properties['website'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['phone'] !== null ? autolinker.link(feature.properties['phone'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['email'] !== null ? autolinker.link(feature.properties['email'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['operator'] !== null ? autolinker.link(feature.properties['operator'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['opening_hours'] !== null ? autolinker.link(feature.properties['opening_hours'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name:hi'] !== null ? autolinker.link(feature.properties['name:hi'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name:en'] !== null ? autolinker.link(feature.properties['name:en'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['addr:street'] !== null ? autolinker.link(feature.properties['addr:street'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name:ne'] !== null ? autolinker.link(feature.properties['name:ne'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['addr:postcode'] !== null ? autolinker.link(feature.properties['addr:postcode'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['addr:city'] !== null ? autolinker.link(feature.properties['addr:city'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['operator:type'] !== null ? autolinker.link(feature.properties['operator:type'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name'] !== null ? autolinker.link(feature.properties['name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_school_2_0() {
+            return {
+                pane: 'pane_school_2',
+        rotationAngle: 0.0,
+        rotationOrigin: 'center center',
+        icon: L.icon({
+            iconUrl: 'markers/school_2.svg',
+            iconSize: [11.4, 11.4]
+        }),
+                interactive: true,
+            }
+        }
+        map.createPane('pane_school_2');
+        map.getPane('pane_school_2').style.zIndex = 402;
+        map.getPane('pane_school_2').style['mix-blend-mode'] = 'normal';
+        var layer_school_2 = new L.geoJson(json_school_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_school_2',
+            layerName: 'layer_school_2',
+            pane: 'pane_school_2',
+            onEachFeature: pop_school_2,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.marker(latlng, style_school_2_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_school_2);
+        map.addLayer(layer_school_2);
+        function pop_worship_3(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['full_id'] !== null ? autolinker.link(feature.properties['full_id'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['osm_id'] !== null ? autolinker.link(feature.properties['osm_id'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['osm_type'] !== null ? autolinker.link(feature.properties['osm_type'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['amenity'] !== null ? autolinker.link(feature.properties['amenity'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name:ur'] !== null ? autolinker.link(feature.properties['name:ur'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name:pnb'] !== null ? autolinker.link(feature.properties['name:pnb'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name:pa'] !== null ? autolinker.link(feature.properties['name:pa'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name:ks'] !== null ? autolinker.link(feature.properties['name:ks'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name:hi'] !== null ? autolinker.link(feature.properties['name:hi'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['contact:phone'] !== null ? autolinker.link(feature.properties['contact:phone'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['service_times'] !== null ? autolinker.link(feature.properties['service_times'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['description'] !== null ? autolinker.link(feature.properties['description'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['alt_name'] !== null ? autolinker.link(feature.properties['alt_name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['addr:housenumber'] !== null ? autolinker.link(feature.properties['addr:housenumber'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['addr:city'] !== null ? autolinker.link(feature.properties['addr:city'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['opening_hours'] !== null ? autolinker.link(feature.properties['opening_hours'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['email'] !== null ? autolinker.link(feature.properties['email'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name:ne'] !== null ? autolinker.link(feature.properties['name:ne'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['addr:postcode'] !== null ? autolinker.link(feature.properties['addr:postcode'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['addr:street'] !== null ? autolinker.link(feature.properties['addr:street'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['designation'] !== null ? autolinker.link(feature.properties['designation'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name:en'] !== null ? autolinker.link(feature.properties['name:en'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['religion'] !== null ? autolinker.link(feature.properties['religion'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name'] !== null ? autolinker.link(feature.properties['name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['building'] !== null ? autolinker.link(feature.properties['building'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['addr:housename'] !== null ? autolinker.link(feature.properties['addr:housename'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_worship_3_0() {
+            return {
+                pane: 'pane_worship_3',
+        rotationAngle: 0.0,
+        rotationOrigin: 'center center',
+        icon: L.icon({
+            iconUrl: 'markers/worship_3.svg',
+            iconSize: [18.240000000000002, 18.240000000000002]
+        }),
+                interactive: true,
+            }
+        }
+        map.createPane('pane_worship_3');
+        map.getPane('pane_worship_3').style.zIndex = 403;
+        map.getPane('pane_worship_3').style['mix-blend-mode'] = 'normal';
+        var layer_worship_3 = new L.geoJson(json_worship_3, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_worship_3',
+            layerName: 'layer_worship_3',
+            pane: 'pane_worship_3',
+            onEachFeature: pop_worship_3,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.marker(latlng, style_worship_3_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_worship_3);
+        map.addLayer(layer_worship_3);
+        function pop_hospital_4(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['full_id'] !== null ? autolinker.link(feature.properties['full_id'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['osm_id'] !== null ? autolinker.link(feature.properties['osm_id'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['osm_type'] !== null ? autolinker.link(feature.properties['osm_type'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['amenity'] !== null ? autolinker.link(feature.properties['amenity'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['healthcare'] !== null ? autolinker.link(feature.properties['healthcare'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['addr:postcode'] !== null ? autolinker.link(feature.properties['addr:postcode'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['addr:housenumber'] !== null ? autolinker.link(feature.properties['addr:housenumber'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name:ne'] !== null ? autolinker.link(feature.properties['name:ne'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['contact:phone'] !== null ? autolinker.link(feature.properties['contact:phone'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['opening_hours'] !== null ? autolinker.link(feature.properties['opening_hours'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['addr:street'] !== null ? autolinker.link(feature.properties['addr:street'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">highway</th>\
+                        <td>' + (feature.properties['highway'] !== null ? autolinker.link(feature.properties['highway'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['phone'] !== null ? autolinker.link(feature.properties['phone'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['internet_access'] !== null ? autolinker.link(feature.properties['internet_access'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['email'] !== null ? autolinker.link(feature.properties['email'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name:en'] !== null ? autolinker.link(feature.properties['name:en'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name'] !== null ? autolinker.link(feature.properties['name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['emergency'] !== null ? autolinker.link(feature.properties['emergency'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_hospital_4_0() {
+            return {
+                pane: 'pane_hospital_4',
+                radius: 7.200000000000003,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,0,0,1.0)',
+                interactive: true,
+            }
+        }
+        function style_hospital_4_1() {
+            return {
+                pane: 'pane_hospital_4',
+        rotationAngle: 0.0,
+        rotationOrigin: 'center center',
+        icon: L.icon({
+            iconUrl: 'markers/hospital_4.svg',
+            iconSize: [15.2, 15.2]
+        }),
+                interactive: true,
+            }
+        }
+        map.createPane('pane_hospital_4');
+        map.getPane('pane_hospital_4').style.zIndex = 404;
+        map.getPane('pane_hospital_4').style['mix-blend-mode'] = 'normal';
+        var layer_hospital_4 = new L.geoJson.multiStyle(json_hospital_4, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_hospital_4',
+            layerName: 'layer_hospital_4',
+            pane: 'pane_hospital_4',
+            onEachFeature: pop_hospital_4,
+            pointToLayers: [function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.marker(latlng, style_hospital_4_0(feature));
+            },function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.marker(latlng, style_hospital_4_1(feature));
+            },
+        ]});
+        bounds_group.addLayer(layer_hospital_4);
+        map.addLayer(layer_hospital_4);
+        function pop_bank_5(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['full_id'] !== null ? autolinker.link(feature.properties['full_id'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['osm_id'] !== null ? autolinker.link(feature.properties['osm_id'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['osm_type'] !== null ? autolinker.link(feature.properties['osm_type'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['amenity'] !== null ? autolinker.link(feature.properties['amenity'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">atm</th>\
+                        <td>' + (feature.properties['atm'] !== null ? autolinker.link(feature.properties['atm'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['addr:street'] !== null ? autolinker.link(feature.properties['addr:street'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['addr:housenumber'] !== null ? autolinker.link(feature.properties['addr:housenumber'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['website'] !== null ? autolinker.link(feature.properties['website'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['phone'] !== null ? autolinker.link(feature.properties['phone'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['opening_hours'] !== null ? autolinker.link(feature.properties['opening_hours'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['email'] !== null ? autolinker.link(feature.properties['email'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name'] !== null ? autolinker.link(feature.properties['name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_bank_5_0() {
+            return {
+                pane: 'pane_bank_5',
+        rotationAngle: 0.0,
+        rotationOrigin: 'center center',
+        icon: L.icon({
+            iconUrl: 'markers/bank_5.svg',
+            iconSize: [12.920000000000002, 12.920000000000002]
+        }),
+                interactive: true,
+            }
+        }
+        map.createPane('pane_bank_5');
+        map.getPane('pane_bank_5').style.zIndex = 405;
+        map.getPane('pane_bank_5').style['mix-blend-mode'] = 'normal';
+        var layer_bank_5 = new L.geoJson(json_bank_5, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_bank_5',
+            layerName: 'layer_bank_5',
+            pane: 'pane_bank_5',
+            onEachFeature: pop_bank_5,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.marker(latlng, style_bank_5_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_bank_5);
+        map.addLayer(layer_bank_5);
+            var title = new L.Control();
+            title.onAdd = function (map) {
+                this._div = L.DomUtil.create('div', 'info');
+                this.update();
+                return this._div;
+            };
+            title.update = function () {
+                this._div.innerHTML = '<h2> Map showing School, Hospital,Bank and Worship place</h2>';
+            };
+            title.addTo(map);
+            var abstract = new L.Control({'position':'bottomleft'});
+            abstract.onAdd = function (map) {
+                this._div = L.DomUtil.create('div',
+                'leaflet-control abstract');
+                this._div.id = 'abstract'
+
+                    abstract.show();
+                    return this._div;
+                };
+                abstract.show = function () {
+                    this._div.classList.remove("abstract");
+                    this._div.classList.add("abstractUncollapsed");
+                    this._div.innerHTML = 'This web map will show all the schools, hosptals, Banks and Worship places in Ilam District.';
+            };
+            abstract.addTo(map);
+        var osmGeocoder = new L.Control.Geocoder({
+            collapsed: true,
+            position: 'topleft',
+            text: 'Search',
+            title: 'Testing'
+        }).addTo(map);
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .className += ' fa fa-search';
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .title += 'Search for a place';
+        var baseMaps = {};
+        var overlaysTree = [
+            {label: '<img src="legend/bank_5.png" /> bank', layer: layer_bank_5},
+            {label: '<img src="legend/hospital_4.png" /> hospital', layer: layer_hospital_4},
+            {label: '<img src="legend/worship_3.png" /> worship', layer: layer_worship_3},
+            {label: '<img src="legend/school_2.png" /> school', layer: layer_school_2},
+            {label: '<img src="legend/ilam_1.png" /> ilam', layer: layer_ilam_1},
+            {label: "open street map", layer: layer_openstreetmap_0},]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: true,
+        });
+        lay.addTo(map);
+        setBounds();
+        map.addControl(new L.Control.Search({
+            layer: layer_hospital_4,
+            initial: false,
+            hideMarkerOnCollapse: true,
+            propertyName: 'name'}));
+        document.getElementsByClassName('search-button')[0].className +=
+         ' fa fa-binoculars';
+        var mapDiv = document.getElementById('map');
+        var row = document.createElement('div');
+        row.className="row";
+        row.id="all";
+        row.style.height = "100%";
+        var col1 = document.createElement('div');
+        col1.className="col9";
+        col1.id = "mapWindow";
+        col1.style.height = "99%";
+        col1.style.width = "80%";
+        col1.style.display = "inline-block";
+        var col2 = document.createElement('div');
+        col2.className="col3";
+        col2.id = "menu";
+        col2.style.display = "inline-block";
+        mapDiv.parentNode.insertBefore(row, mapDiv);
+        document.getElementById("all").appendChild(col1);
+        document.getElementById("all").appendChild(col2);
+        col1.appendChild(mapDiv)
+        var Filters = {"Shape_Leng": "real","Shape_Area": "real","DISTRICT": "str","alt_name": "str","amenity": "str","addr:city": "str","addr:housename": "str","website": "str","full_id": "str","name": "str","opening_hours": "str","emergency": "str","internet_access": "str","operator:type": "str","building": "str","description": "str","religion": "str","healthcare": "str","highway": "str","name:en": "str","operator": "str","name:ne": "str","addr:street": "str","contact:phone": "str","addr:postcode": "str","name:hi": "str","email": "str","osm_type": "str","atm": "str","addr:housenumber": "str","osm_id": "str","phone": "str"};
+        function filterFunc() {
+          map.eachLayer(function(lyr){
+          if ("options" in lyr && "dataVar" in lyr["options"]){
+            features = this[lyr["options"]["dataVar"]].features.slice(0);
+            try{
+              for (key in Filters){
+                keyS = key.replace(/[^a-zA-Z0-9_]/g, "")
+                if (Filters[key] == "str" || Filters[key] == "bool"){
+                  var selection = [];
+                  var options = document.getElementById("sel_" + keyS).options
+                  for (var i=0; i < options.length; i++) {
+                    if (options[i].selected) selection.push(options[i].value);
+                  }
+                    try{
+                      if (key in features[0].properties){
+                        for (i = features.length - 1;
+                          i >= 0; --i){
+                          if (selection.indexOf(
+                          features[i].properties[key])<0
+                          && selection.length>0) {
+                          features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                  }
+                }
+                if (Filters[key] == "int"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (parseInt(features[i].properties[key])
+                          < sliderVals[0]
+                          || parseInt(features[i].properties[key])
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "real"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (features[i].properties[key]
+                          < sliderVals[0]
+                          || features[i].properties[key]
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "date"
+                  || Filters[key] == "datetime"
+                  || Filters[key] == "time"){
+                  try{
+                    if (key in features[0].properties){
+                      HTMLkey = key.replace(/[&\/\\#,+()$~%.'":*?<>{} ]/g, '');
+                      startdate = document.getElementById("dat_" +
+                        HTMLkey + "_date1").value.replace(" ", "T");
+                      enddate = document.getElementById("dat_" +
+                        HTMLkey + "_date2").value.replace(" ", "T");
+                      for (i = features.length - 1; i >= 0; --i){
+                        if (features[i].properties[key] < startdate
+                          || features[i].properties[key] > enddate){
+                          features.splice(i,1);
+                        }
+                      }
+                    }
+                  } catch(err){
+                  }
+                }
+              }
+            } catch(err){
+            }
+          this[lyr["options"]["layerName"]].clearLayers();
+          this[lyr["options"]["layerName"]].addData(features);
+          }
+          })
+        }
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_Shape_Leng = document.createElement("div");
+            div_Shape_Leng.id = "div_Shape_Leng";
+            div_Shape_Leng.className = "slider";
+            document.getElementById("menu").appendChild(div_Shape_Leng);
+            var lab_Shape_Leng = document.createElement('div');
+            lab_Shape_Leng.innerHTML  = 'Shape_Leng: <span id="val_Shape_Leng"></span>';
+            lab_Shape_Leng.className = 'filterlabel';
+            document.getElementById("menu").appendChild(lab_Shape_Leng);
+            var reset_Shape_Leng = document.createElement('div');
+            reset_Shape_Leng.innerHTML = 'clear filter';
+            reset_Shape_Leng.className = 'filterlabel';
+            lab_Shape_Leng.className = 'filterlabel';
+            reset_Shape_Leng.onclick = function() {
+                sel_Shape_Leng.noUiSlider.reset();
+            };
+            document.getElementById("menu").appendChild(reset_Shape_Leng);
+            var sel_Shape_Leng = document.getElementById('div_Shape_Leng');
+            noUiSlider.create(sel_Shape_Leng, {
+                connect: true,
+                start: [257058.592912, 257058.592912],
+                range: {
+                min: 257058.592912,
+                max: 257058.592912
+                }
+            });
+            sel_Shape_Leng.noUiSlider.on('update', function (values) {
+            val_Shape_Leng = document.getElementById('val_Shape_Leng');
+            val_Shape_Leng.innerHTML = values.join(' - ');
+                filterFunc()
+            });
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_Shape_Area = document.createElement("div");
+            div_Shape_Area.id = "div_Shape_Area";
+            div_Shape_Area.className = "slider";
+            document.getElementById("menu").appendChild(div_Shape_Area);
+            var lab_Shape_Area = document.createElement('div');
+            lab_Shape_Area.innerHTML  = 'Shape_Area: <span id="val_Shape_Area"></span>';
+            lab_Shape_Area.className = 'filterlabel';
+            document.getElementById("menu").appendChild(lab_Shape_Area);
+            var reset_Shape_Area = document.createElement('div');
+            reset_Shape_Area.innerHTML = 'clear filter';
+            reset_Shape_Area.className = 'filterlabel';
+            lab_Shape_Area.className = 'filterlabel';
+            reset_Shape_Area.onclick = function() {
+                sel_Shape_Area.noUiSlider.reset();
+            };
+            document.getElementById("menu").appendChild(reset_Shape_Area);
+            var sel_Shape_Area = document.getElementById('div_Shape_Area');
+            noUiSlider.create(sel_Shape_Area, {
+                connect: true,
+                start: [1684275261.85, 1684275261.85],
+                range: {
+                min: 1684275261.85,
+                max: 1684275261.85
+                }
+            });
+            sel_Shape_Area.noUiSlider.on('update', function (values) {
+            val_Shape_Area = document.getElementById('val_Shape_Area');
+            val_Shape_Area.innerHTML = values.join(' - ');
+                filterFunc()
+            });
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_DISTRICT = document.createElement('div');
+            div_DISTRICT.id = "div_DISTRICT";
+            div_DISTRICT.className= "filterselect";
+            document.getElementById("menu").appendChild(div_DISTRICT);
+            sel_DISTRICT = document.createElement('select');
+            sel_DISTRICT.multiple = true;
+            sel_DISTRICT.size = 1;
+            sel_DISTRICT.id = "sel_DISTRICT";
+            var DISTRICT_options_str = "<option value='' unselected></option>";
+            sel_DISTRICT.onchange = function(){filterFunc()};
+            DISTRICT_options_str  += '<option value="ILAM">ILAM</option>';
+            sel_DISTRICT.innerHTML = DISTRICT_options_str;
+            div_DISTRICT.appendChild(sel_DISTRICT);
+            var lab_DISTRICT = document.createElement('div');
+            lab_DISTRICT.innerHTML = 'DISTRICT';
+            lab_DISTRICT.className = 'filterlabel';
+            div_DISTRICT.appendChild(lab_DISTRICT);
+            var reset_DISTRICT = document.createElement('div');
+            reset_DISTRICT.innerHTML = 'clear filter';
+            reset_DISTRICT.className = 'filterlabel';
+            reset_DISTRICT.onclick = function() {
+                var options = document.getElementById("sel_DISTRICT").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_DISTRICT.appendChild(reset_DISTRICT);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_alt_name = document.createElement('div');
+            div_alt_name.id = "div_alt_name";
+            div_alt_name.className= "filterselect";
+            document.getElementById("menu").appendChild(div_alt_name);
+            sel_alt_name = document.createElement('select');
+            sel_alt_name.multiple = true;
+            sel_alt_name.size = 1;
+            sel_alt_name.id = "sel_alt_name";
+            var alt_name_options_str = "<option value='' unselected></option>";
+            sel_alt_name.onchange = function(){filterFunc()};
+            alt_name_options_str  += '<option value="Dhamma Suriyo">Dhamma Suriyo</option>';
+            sel_alt_name.innerHTML = alt_name_options_str;
+            div_alt_name.appendChild(sel_alt_name);
+            var lab_alt_name = document.createElement('div');
+            lab_alt_name.innerHTML = 'alt_name';
+            lab_alt_name.className = 'filterlabel';
+            div_alt_name.appendChild(lab_alt_name);
+            var reset_alt_name = document.createElement('div');
+            reset_alt_name.innerHTML = 'clear filter';
+            reset_alt_name.className = 'filterlabel';
+            reset_alt_name.onclick = function() {
+                var options = document.getElementById("sel_alt_name").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_alt_name.appendChild(reset_alt_name);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_amenity = document.createElement('div');
+            div_amenity.id = "div_amenity";
+            div_amenity.className= "filterselect";
+            document.getElementById("menu").appendChild(div_amenity);
+            sel_amenity = document.createElement('select');
+            sel_amenity.multiple = true;
+            sel_amenity.size = 4;
+            sel_amenity.id = "sel_amenity";
+            var amenity_options_str = "<option value='' unselected></option>";
+            sel_amenity.onchange = function(){filterFunc()};
+            amenity_options_str  += '<option value="bank">bank</option>';
+            amenity_options_str  += '<option value="hospital">hospital</option>';
+            amenity_options_str  += '<option value="place_of_worship">place_of_worship</option>';
+            amenity_options_str  += '<option value="school">school</option>';
+            sel_amenity.innerHTML = amenity_options_str;
+            div_amenity.appendChild(sel_amenity);
+            var lab_amenity = document.createElement('div');
+            lab_amenity.innerHTML = 'amenity';
+            lab_amenity.className = 'filterlabel';
+            div_amenity.appendChild(lab_amenity);
+            var reset_amenity = document.createElement('div');
+            reset_amenity.innerHTML = 'clear filter';
+            reset_amenity.className = 'filterlabel';
+            reset_amenity.onclick = function() {
+                var options = document.getElementById("sel_amenity").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_amenity.appendChild(reset_amenity);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_addrcity = document.createElement('div');
+            div_addrcity.id = "div_addrcity";
+            div_addrcity.className= "filterselect";
+            document.getElementById("menu").appendChild(div_addrcity);
+            sel_addrcity = document.createElement('select');
+            sel_addrcity.multiple = true;
+            sel_addrcity.size = 3;
+            sel_addrcity.id = "sel_addrcity";
+            var addrcity_options_str = "<option value='' unselected></option>";
+            sel_addrcity.onchange = function(){filterFunc()};
+            addrcity_options_str  += '<option value="Godak">Godak</option>';
+            addrcity_options_str  += '<option value="Maghe">Maghe</option>';
+            addrcity_options_str  += '<option value="Suryodaya">Suryodaya</option>';
+            sel_addrcity.innerHTML = addrcity_options_str;
+            div_addrcity.appendChild(sel_addrcity);
+            var lab_addrcity = document.createElement('div');
+            lab_addrcity.innerHTML = 'addr:city';
+            lab_addrcity.className = 'filterlabel';
+            div_addrcity.appendChild(lab_addrcity);
+            var reset_addrcity = document.createElement('div');
+            reset_addrcity.innerHTML = 'clear filter';
+            reset_addrcity.className = 'filterlabel';
+            reset_addrcity.onclick = function() {
+                var options = document.getElementById("sel_addrcity").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_addrcity.appendChild(reset_addrcity);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_addrhousename = document.createElement('div');
+            div_addrhousename.id = "div_addrhousename";
+            div_addrhousename.className= "filterselect";
+            document.getElementById("menu").appendChild(div_addrhousename);
+            sel_addrhousename = document.createElement('select');
+            sel_addrhousename.multiple = true;
+            sel_addrhousename.size = 1;
+            sel_addrhousename.id = "sel_addrhousename";
+            var addrhousename_options_str = "<option value='' unselected></option>";
+            sel_addrhousename.onchange = function(){filterFunc()};
+            addrhousename_options_str  += '<option value="Fansong Gumba">Fansong Gumba</option>';
+            sel_addrhousename.innerHTML = addrhousename_options_str;
+            div_addrhousename.appendChild(sel_addrhousename);
+            var lab_addrhousename = document.createElement('div');
+            lab_addrhousename.innerHTML = 'addr:housename';
+            lab_addrhousename.className = 'filterlabel';
+            div_addrhousename.appendChild(lab_addrhousename);
+            var reset_addrhousename = document.createElement('div');
+            reset_addrhousename.innerHTML = 'clear filter';
+            reset_addrhousename.className = 'filterlabel';
+            reset_addrhousename.onclick = function() {
+                var options = document.getElementById("sel_addrhousename").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_addrhousename.appendChild(reset_addrhousename);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_website = document.createElement('div');
+            div_website.id = "div_website";
+            div_website.className= "filterselect";
+            document.getElementById("menu").appendChild(div_website);
+            sel_website = document.createElement('select');
+            sel_website.multiple = true;
+            sel_website.size = 1;
+            sel_website.id = "sel_website";
+            var website_options_str = "<option value='' unselected></option>";
+            sel_website.onchange = function(){filterFunc()};
+            website_options_str  += '<option value="http://peaceland.edu.np/">http://peaceland.edu.np/</option>';
+            sel_website.innerHTML = website_options_str;
+            div_website.appendChild(sel_website);
+            var lab_website = document.createElement('div');
+            lab_website.innerHTML = 'website';
+            lab_website.className = 'filterlabel';
+            div_website.appendChild(lab_website);
+            var reset_website = document.createElement('div');
+            reset_website.innerHTML = 'clear filter';
+            reset_website.className = 'filterlabel';
+            reset_website.onclick = function() {
+                var options = document.getElementById("sel_website").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_website.appendChild(reset_website);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_full_id = document.createElement('div');
+            div_full_id.id = "div_full_id";
+            div_full_id.className= "filterselect";
+            document.getElementById("menu").appendChild(div_full_id);
+            sel_full_id = document.createElement('select');
+            sel_full_id.multiple = true;
+            sel_full_id.size = 10;
+            sel_full_id.id = "sel_full_id";
+            var full_id_options_str = "<option value='' unselected></option>";
+            sel_full_id.onchange = function(){filterFunc()};
+            full_id_options_str  += '<option value="n2155539563">n2155539563</option>';
+            full_id_options_str  += '<option value="n2155539866">n2155539866</option>';
+            full_id_options_str  += '<option value="n2155545570">n2155545570</option>';
+            full_id_options_str  += '<option value="n2405480536">n2405480536</option>';
+            full_id_options_str  += '<option value="n3287679808">n3287679808</option>';
+            full_id_options_str  += '<option value="n3385957288">n3385957288</option>';
+            full_id_options_str  += '<option value="n4363228192">n4363228192</option>';
+            full_id_options_str  += '<option value="n4490866808">n4490866808</option>';
+            full_id_options_str  += '<option value="n4634030090">n4634030090</option>';
+            full_id_options_str  += '<option value="n4843843245">n4843843245</option>';
+            full_id_options_str  += '<option value="n4948873421">n4948873421</option>';
+            full_id_options_str  += '<option value="n4984514821">n4984514821</option>';
+            full_id_options_str  += '<option value="n4984515021">n4984515021</option>';
+            full_id_options_str  += '<option value="n5006554577">n5006554577</option>';
+            full_id_options_str  += '<option value="n5075167522">n5075167522</option>';
+            full_id_options_str  += '<option value="n5152213421">n5152213421</option>';
+            full_id_options_str  += '<option value="n5152214021">n5152214021</option>';
+            full_id_options_str  += '<option value="n5165916997">n5165916997</option>';
+            full_id_options_str  += '<option value="n5183258114">n5183258114</option>';
+            full_id_options_str  += '<option value="n5183286441">n5183286441</option>';
+            full_id_options_str  += '<option value="n5197399439">n5197399439</option>';
+            full_id_options_str  += '<option value="n5197400317">n5197400317</option>';
+            full_id_options_str  += '<option value="n5213573004">n5213573004</option>';
+            full_id_options_str  += '<option value="n5330416623">n5330416623</option>';
+            full_id_options_str  += '<option value="n5330416626">n5330416626</option>';
+            full_id_options_str  += '<option value="n5330416627">n5330416627</option>';
+            full_id_options_str  += '<option value="n5330416628">n5330416628</option>';
+            full_id_options_str  += '<option value="n5330416629">n5330416629</option>';
+            full_id_options_str  += '<option value="n5330416922">n5330416922</option>';
+            full_id_options_str  += '<option value="n5727671824">n5727671824</option>';
+            full_id_options_str  += '<option value="n5838725085">n5838725085</option>';
+            full_id_options_str  += '<option value="n5909064923">n5909064923</option>';
+            full_id_options_str  += '<option value="n5933850086">n5933850086</option>';
+            full_id_options_str  += '<option value="n5933850089">n5933850089</option>';
+            full_id_options_str  += '<option value="n5933851685">n5933851685</option>';
+            full_id_options_str  += '<option value="n5933851687">n5933851687</option>';
+            full_id_options_str  += '<option value="n6085061687">n6085061687</option>';
+            full_id_options_str  += '<option value="n6332107797">n6332107797</option>';
+            full_id_options_str  += '<option value="n6554423886">n6554423886</option>';
+            full_id_options_str  += '<option value="n6554424086">n6554424086</option>';
+            full_id_options_str  += '<option value="n7706514486">n7706514486</option>';
+            full_id_options_str  += '<option value="n8356506917">n8356506917</option>';
+            full_id_options_str  += '<option value="n8421778717">n8421778717</option>';
+            full_id_options_str  += '<option value="n8421778718">n8421778718</option>';
+            full_id_options_str  += '<option value="n8625806917">n8625806917</option>';
+            full_id_options_str  += '<option value="n8625807018">n8625807018</option>';
+            full_id_options_str  += '<option value="n9141869117">n9141869117</option>';
+            full_id_options_str  += '<option value="n9141869417">n9141869417</option>';
+            full_id_options_str  += '<option value="n9377847959">n9377847959</option>';
+            full_id_options_str  += '<option value="n9377861726">n9377861726</option>';
+            full_id_options_str  += '<option value="n9547392373">n9547392373</option>';
+            full_id_options_str  += '<option value="n9776289249">n9776289249</option>';
+            full_id_options_str  += '<option value="n9776289250">n9776289250</option>';
+            full_id_options_str  += '<option value="n9776289251">n9776289251</option>';
+            full_id_options_str  += '<option value="n9776289252">n9776289252</option>';
+            full_id_options_str  += '<option value="n9776289253">n9776289253</option>';
+            full_id_options_str  += '<option value="n9776289254">n9776289254</option>';
+            full_id_options_str  += '<option value="n9776289255">n9776289255</option>';
+            full_id_options_str  += '<option value="n9776289256">n9776289256</option>';
+            full_id_options_str  += '<option value="n9776289257">n9776289257</option>';
+            full_id_options_str  += '<option value="n9776289258">n9776289258</option>';
+            full_id_options_str  += '<option value="n9776289259">n9776289259</option>';
+            full_id_options_str  += '<option value="n9776289260">n9776289260</option>';
+            full_id_options_str  += '<option value="n9776289261">n9776289261</option>';
+            full_id_options_str  += '<option value="n9776289262">n9776289262</option>';
+            full_id_options_str  += '<option value="n9776289263">n9776289263</option>';
+            full_id_options_str  += '<option value="n9776289264">n9776289264</option>';
+            full_id_options_str  += '<option value="n9776289265">n9776289265</option>';
+            full_id_options_str  += '<option value="n9776289266">n9776289266</option>';
+            full_id_options_str  += '<option value="n9776289267">n9776289267</option>';
+            full_id_options_str  += '<option value="n9776289268">n9776289268</option>';
+            full_id_options_str  += '<option value="n9776289269">n9776289269</option>';
+            full_id_options_str  += '<option value="n9776289270">n9776289270</option>';
+            full_id_options_str  += '<option value="n9776289271">n9776289271</option>';
+            full_id_options_str  += '<option value="n9776289272">n9776289272</option>';
+            full_id_options_str  += '<option value="n9776289273">n9776289273</option>';
+            full_id_options_str  += '<option value="n9776289274">n9776289274</option>';
+            full_id_options_str  += '<option value="n9776289275">n9776289275</option>';
+            full_id_options_str  += '<option value="n9776289276">n9776289276</option>';
+            full_id_options_str  += '<option value="n9776289277">n9776289277</option>';
+            full_id_options_str  += '<option value="n9776289278">n9776289278</option>';
+            full_id_options_str  += '<option value="n9776289279">n9776289279</option>';
+            full_id_options_str  += '<option value="n9776289280">n9776289280</option>';
+            full_id_options_str  += '<option value="n9776289281">n9776289281</option>';
+            full_id_options_str  += '<option value="n9776289282">n9776289282</option>';
+            full_id_options_str  += '<option value="n9776289283">n9776289283</option>';
+            full_id_options_str  += '<option value="n9776289284">n9776289284</option>';
+            full_id_options_str  += '<option value="n9776289285">n9776289285</option>';
+            full_id_options_str  += '<option value="n9776289286">n9776289286</option>';
+            full_id_options_str  += '<option value="n9776289287">n9776289287</option>';
+            full_id_options_str  += '<option value="n9776289288">n9776289288</option>';
+            full_id_options_str  += '<option value="n9776289289">n9776289289</option>';
+            full_id_options_str  += '<option value="n9776289290">n9776289290</option>';
+            full_id_options_str  += '<option value="n9776289291">n9776289291</option>';
+            full_id_options_str  += '<option value="n9776289292">n9776289292</option>';
+            full_id_options_str  += '<option value="n9776289293">n9776289293</option>';
+            full_id_options_str  += '<option value="n9776289294">n9776289294</option>';
+            full_id_options_str  += '<option value="n9776289295">n9776289295</option>';
+            full_id_options_str  += '<option value="n9776289296">n9776289296</option>';
+            full_id_options_str  += '<option value="n9776289297">n9776289297</option>';
+            full_id_options_str  += '<option value="n9776289298">n9776289298</option>';
+            full_id_options_str  += '<option value="n9776289299">n9776289299</option>';
+            full_id_options_str  += '<option value="n9776289300">n9776289300</option>';
+            full_id_options_str  += '<option value="n9776289301">n9776289301</option>';
+            full_id_options_str  += '<option value="n9776289302">n9776289302</option>';
+            full_id_options_str  += '<option value="n9776289303">n9776289303</option>';
+            full_id_options_str  += '<option value="n9776289304">n9776289304</option>';
+            full_id_options_str  += '<option value="n9776289305">n9776289305</option>';
+            full_id_options_str  += '<option value="n9776289306">n9776289306</option>';
+            full_id_options_str  += '<option value="n9776289307">n9776289307</option>';
+            full_id_options_str  += '<option value="n9776941332">n9776941332</option>';
+            full_id_options_str  += '<option value="n9776941333">n9776941333</option>';
+            full_id_options_str  += '<option value="n9776941334">n9776941334</option>';
+            full_id_options_str  += '<option value="n9776941335">n9776941335</option>';
+            full_id_options_str  += '<option value="n9776941336">n9776941336</option>';
+            full_id_options_str  += '<option value="n9776941337">n9776941337</option>';
+            full_id_options_str  += '<option value="n9776941338">n9776941338</option>';
+            full_id_options_str  += '<option value="n9776941339">n9776941339</option>';
+            full_id_options_str  += '<option value="n9776941340">n9776941340</option>';
+            full_id_options_str  += '<option value="n9776941341">n9776941341</option>';
+            full_id_options_str  += '<option value="n9776941342">n9776941342</option>';
+            full_id_options_str  += '<option value="n9776941343">n9776941343</option>';
+            full_id_options_str  += '<option value="n9776941344">n9776941344</option>';
+            full_id_options_str  += '<option value="n9776941345">n9776941345</option>';
+            full_id_options_str  += '<option value="n9776941346">n9776941346</option>';
+            full_id_options_str  += '<option value="n9776941347">n9776941347</option>';
+            full_id_options_str  += '<option value="n9776941348">n9776941348</option>';
+            full_id_options_str  += '<option value="n9776941349">n9776941349</option>';
+            full_id_options_str  += '<option value="n9776941350">n9776941350</option>';
+            full_id_options_str  += '<option value="n9776941352">n9776941352</option>';
+            full_id_options_str  += '<option value="n9776941353">n9776941353</option>';
+            full_id_options_str  += '<option value="n9776941354">n9776941354</option>';
+            full_id_options_str  += '<option value="n9776941355">n9776941355</option>';
+            full_id_options_str  += '<option value="n9776941356">n9776941356</option>';
+            full_id_options_str  += '<option value="n9802461404">n9802461404</option>';
+            full_id_options_str  += '<option value="n9802461405">n9802461405</option>';
+            full_id_options_str  += '<option value="n9802461406">n9802461406</option>';
+            full_id_options_str  += '<option value="n9802461407">n9802461407</option>';
+            full_id_options_str  += '<option value="n9802461408">n9802461408</option>';
+            full_id_options_str  += '<option value="n9802461409">n9802461409</option>';
+            full_id_options_str  += '<option value="n9802461410">n9802461410</option>';
+            full_id_options_str  += '<option value="n9802461411">n9802461411</option>';
+            full_id_options_str  += '<option value="n9802461412">n9802461412</option>';
+            full_id_options_str  += '<option value="n9802461413">n9802461413</option>';
+            full_id_options_str  += '<option value="n9802461414">n9802461414</option>';
+            full_id_options_str  += '<option value="n9802461415">n9802461415</option>';
+            full_id_options_str  += '<option value="n9802461416">n9802461416</option>';
+            full_id_options_str  += '<option value="n9802570317">n9802570317</option>';
+            full_id_options_str  += '<option value="n9802570318">n9802570318</option>';
+            full_id_options_str  += '<option value="n9802570319">n9802570319</option>';
+            full_id_options_str  += '<option value="n9802570320">n9802570320</option>';
+            full_id_options_str  += '<option value="n9802570321">n9802570321</option>';
+            full_id_options_str  += '<option value="n9802570322">n9802570322</option>';
+            full_id_options_str  += '<option value="n9802570323">n9802570323</option>';
+            full_id_options_str  += '<option value="n9802570324">n9802570324</option>';
+            full_id_options_str  += '<option value="n9802570325">n9802570325</option>';
+            full_id_options_str  += '<option value="n9802570326">n9802570326</option>';
+            full_id_options_str  += '<option value="n9802570327">n9802570327</option>';
+            full_id_options_str  += '<option value="n9802570328">n9802570328</option>';
+            full_id_options_str  += '<option value="n9802570329">n9802570329</option>';
+            full_id_options_str  += '<option value="n9802570330">n9802570330</option>';
+            full_id_options_str  += '<option value="n9802570331">n9802570331</option>';
+            full_id_options_str  += '<option value="n9802570332">n9802570332</option>';
+            full_id_options_str  += '<option value="n9802570333">n9802570333</option>';
+            full_id_options_str  += '<option value="n9802570334">n9802570334</option>';
+            full_id_options_str  += '<option value="n9802570335">n9802570335</option>';
+            full_id_options_str  += '<option value="n9802570336">n9802570336</option>';
+            full_id_options_str  += '<option value="n9813020175">n9813020175</option>';
+            sel_full_id.innerHTML = full_id_options_str;
+            div_full_id.appendChild(sel_full_id);
+            var lab_full_id = document.createElement('div');
+            lab_full_id.innerHTML = 'full_id';
+            lab_full_id.className = 'filterlabel';
+            div_full_id.appendChild(lab_full_id);
+            var reset_full_id = document.createElement('div');
+            reset_full_id.innerHTML = 'clear filter';
+            reset_full_id.className = 'filterlabel';
+            reset_full_id.onclick = function() {
+                var options = document.getElementById("sel_full_id").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_full_id.appendChild(reset_full_id);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_name = document.createElement('div');
+            div_name.id = "div_name";
+            div_name.className= "filterselect";
+            document.getElementById("menu").appendChild(div_name);
+            sel_name = document.createElement('select');
+            sel_name.multiple = true;
+            sel_name.size = 10;
+            sel_name.id = "sel_name";
+            var name_options_str = "<option value='' unselected></option>";
+            sel_name.onchange = function(){filterFunc()};
+            name_options_str  += '<option value="ADBNL BRANCH Branch Office,Ilam">ADBNL BRANCH Branch Office,Ilam</option>';
+            name_options_str  += '<option value="Aadarsha Higher SecondarySchool">Aadarsha Higher SecondarySchool</option>';
+            name_options_str  += '<option value="Aadarsha School">Aadarsha School</option>';
+            name_options_str  += '<option value="Agricultural Development Bank Ltd. Ilam Branch">Agricultural Development Bank Ltd. Ilam Branch</option>';
+            name_options_str  += '<option value="Agricultural Development Bank Ltd. Mangalbare Branch">Agricultural Development Bank Ltd. Mangalbare Branch</option>';
+            name_options_str  += '<option value="Ashadeep Boarding School">Ashadeep Boarding School</option>';
+            name_options_str  += '<option value="Bhagawati Secondary School">Bhagawati Secondary School</option>';
+            name_options_str  += '<option value="Bhawani Aadharbhut School Maghe School">Bhawani Aadharbhut School Maghe School</option>';
+            name_options_str  += '<option value="Bidhya Primary School">Bidhya Primary School</option>';
+            name_options_str  += '<option value="Bidhyodaya Primary School">Bidhyodaya Primary School</option>';
+            name_options_str  += '<option value="Birendra Ma Bi Ground विरेन्द्र मा.वि. को खेलमैदान ७६८६६७">Birendra Ma Bi Ground विरेन्द्र मा.वि. को खेलमैदान ७६८६६७</option>';
+            name_options_str  += '<option value="Brindavan Boarding School Namsaling,Ilam">Brindavan Boarding School Namsaling,Ilam</option>';
+            name_options_str  += '<option value="Buddha Secondary School">Buddha Secondary School</option>';
+            name_options_str  += '<option value="CYC BRANCH Ilam Branch">CYC BRANCH Ilam Branch</option>';
+            name_options_str  += '<option value="Century BRANCH Illam Branch">Century BRANCH Illam Branch</option>';
+            name_options_str  += '<option value="Century Bank">Century Bank</option>';
+            name_options_str  += '<option value="Dambar Devi Higher Secondary School Chamaita">Dambar Devi Higher Secondary School Chamaita</option>';
+            name_options_str  += '<option value="District Hospital Ilam">District Hospital Ilam</option>';
+            name_options_str  += '<option value="Durga Primary School">Durga Primary School</option>';
+            name_options_str  += '<option value="EBL BLB BIRTAMOD BRANCH">EBL BLB BIRTAMOD BRANCH</option>';
+            name_options_str  += '<option value="EBL BLB LAZIMPAT BRANCH">EBL BLB LAZIMPAT BRANCH</option>';
+            name_options_str  += '<option value="Era Ever Green English School">Era Ever Green English School</option>';
+            name_options_str  += '<option value="Excel BRANCH Ilam Branch">Excel BRANCH Ilam Branch</option>';
+            name_options_str  += '<option value="Excel Development Bank">Excel Development Bank</option>';
+            name_options_str  += '<option value="ForwardMF BRANCH Ilam">ForwardMF BRANCH Ilam</option>';
+            name_options_str  += '<option value="Global BRANCH Ilam Branch">Global BRANCH Ilam Branch</option>';
+            name_options_str  += '<option value="Global Education Foundation">Global Education Foundation</option>';
+            name_options_str  += '<option value="Global IME Bank Ltd. Phikkal Branch">Global IME Bank Ltd. Phikkal Branch</option>';
+            name_options_str  += '<option value="Golden Future">Golden Future</option>';
+            name_options_str  += '<option value="Goodwill BRANCH Ilam Branch">Goodwill BRANCH Ilam Branch</option>';
+            name_options_str  += '<option value="Goodwill Finance Ltd.">Goodwill Finance Ltd.</option>';
+            name_options_str  += '<option value="Green Valley Academy">Green Valley Academy</option>';
+            name_options_str  += '<option value="Hamro Education Academy">Hamro Education Academy</option>';
+            name_options_str  += '<option value="Heritage National Academy">Heritage National Academy</option>';
+            name_options_str  += '<option value="Himalaya basic School">Himalaya basic School</option>';
+            name_options_str  += '<option value="Himalayan Secondary English Boarding School, Shantidanda, Ilam, East Nepal">Himalayan Secondary English Boarding School, Shantidanda, Ilam, East Nepal</option>';
+            name_options_str  += '<option value="Ilam Community Agriculture Campus Ilam (ICAC)">Ilam Community Agriculture Campus Ilam (ICAC)</option>';
+            name_options_str  += '<option value="Ilam Datatraya School">Ilam Datatraya School</option>';
+            name_options_str  += '<option value="Ilam Glorious English School">Ilam Glorious English School</option>';
+            name_options_str  += '<option value="Ilam Higher Secondary School">Ilam Higher Secondary School</option>';
+            name_options_str  += '<option value="Ilam Mount Chhintapu English School.">Ilam Mount Chhintapu English School.</option>';
+            name_options_str  += '<option value="Ilam Vidya Mandir">Ilam Vidya Mandir</option>';
+            name_options_str  += '<option value="Ilam Vipassana Center, Dhamma Suriyo">Ilam Vipassana Center, Dhamma Suriyo</option>';
+            name_options_str  += '<option value="Ilam dipshika english boarding school">Ilam dipshika english boarding school</option>';
+            name_options_str  += '<option value="Janata Higher Secondary School Mai Municipality">Janata Higher Secondary School Mai Municipality</option>';
+            name_options_str  += '<option value="Jeevan BRANCH Bibliyaten">Jeevan BRANCH Bibliyaten</option>';
+            name_options_str  += '<option value="Jubilant Elite Academy">Jubilant Elite Academy</option>';
+            name_options_str  += '<option value="Jyoti Sadan Boarding Schol">Jyoti Sadan Boarding Schol</option>';
+            name_options_str  += '<option value="Karphok Secondary School">Karphok Secondary School</option>';
+            name_options_str  += '<option value="Kerabari Ground667">Kerabari Ground667</option>';
+            name_options_str  += '<option value="Laxmi Adarsha secondary school">Laxmi Adarsha secondary school</option>';
+            name_options_str  += '<option value="Laxmi BLB Ilam">Laxmi BLB Ilam</option>';
+            name_options_str  += '<option value="Laxmi BRANCH Ilam">Laxmi BRANCH Ilam</option>';
+            name_options_str  += '<option value="LaxmiMF BRANCH Biblyate">LaxmiMF BRANCH Biblyate</option>';
+            name_options_str  += '<option value="Lepcha monastery">Lepcha monastery</option>';
+            name_options_str  += '<option value="MBL BRANCH Illam">MBL BRANCH Illam</option>';
+            name_options_str  += '<option value="MRMC">MRMC</option>';
+            name_options_str  += '<option value="Machhapuchchhre Bank Limited ATM">Machhapuchchhre Bank Limited ATM</option>';
+            name_options_str  += '<option value="Maisthan">Maisthan</option>';
+            name_options_str  += '<option value="Meghma Gompa">Meghma Gompa</option>';
+            name_options_str  += '<option value="Montessori Secondary School, Ilam">Montessori Secondary School, Ilam</option>';
+            name_options_str  += '<option value="Mount Mechi Boarding School, Ilam">Mount Mechi Boarding School, Ilam</option>';
+            name_options_str  += '<option value="Mukti BRANCH Ilam Branch">Mukti BRANCH Ilam Branch</option>';
+            name_options_str  += '<option value="NABIL BRANCH Illam Branch">NABIL BRANCH Illam Branch</option>';
+            name_options_str  += '<option value="NIC ASIA Bank Ltd. Ilam Branch">NIC ASIA Bank Ltd. Ilam Branch</option>';
+            name_options_str  += '<option value="NIC BRANCH Ilam">NIC BRANCH Ilam</option>';
+            name_options_str  += '<option value="NIC BRANCH Ilam Municipality Extension Counter">NIC BRANCH Ilam Municipality Extension Counter</option>';
+            name_options_str  += '<option value="NMB BRANCH Ilam">NMB BRANCH Ilam</option>';
+            name_options_str  += '<option value="NMBMF BRANCH Biblyate">NMBMF BRANCH Biblyate</option>';
+            name_options_str  += '<option value="NSBI BRANCH Ilam">NSBI BRANCH Ilam</option>';
+            name_options_str  += '<option value="Nanda secondary school">Nanda secondary school</option>';
+            name_options_str  += '<option value="Narayansthan Temple">Narayansthan Temple</option>';
+            name_options_str  += '<option value="National Cooperative Bank Limited">National Cooperative Bank Limited</option>';
+            name_options_str  += '<option value="Naya Bazar Monastery">Naya Bazar Monastery</option>';
+            name_options_str  += '<option value="Nepal Bangladesh Bank">Nepal Bangladesh Bank</option>';
+            name_options_str  += '<option value="Nepal Bank Ltd. Ilam Branch">Nepal Bank Ltd. Ilam Branch</option>';
+            name_options_str  += '<option value="Nepaltar Secondary School">Nepaltar Secondary School</option>';
+            name_options_str  += '<option value="New IT College">New IT College</option>';
+            name_options_str  += '<option value="New Vision Computer center">New Vision Computer center</option>';
+            name_options_str  += '<option value="Nirdhan BRANCH Ilam">Nirdhan BRANCH Ilam</option>';
+            name_options_str  += '<option value="Okhre">Okhre</option>';
+            name_options_str  += '<option value="Pathibhara Temple, Ilam">Pathibhara Temple, Ilam</option>';
+            name_options_str  += '<option value="Peace Land School">Peace Land School</option>';
+            name_options_str  += '<option value="Phikkal High School">Phikkal High School</option>';
+            name_options_str  += '<option value="Phikkal Hospital">Phikkal Hospital</option>';
+            name_options_str  += '<option value="Play Ground">Play Ground</option>';
+            name_options_str  += '<option value="Play Ground खेल मैदान ६६७">Play Ground खेल मैदान ६६७</option>';
+            name_options_str  += '<option value="Pokhari Primary School">Pokhari Primary School</option>';
+            name_options_str  += '<option value="Prabhu BLB Ilam">Prabhu BLB Ilam</option>';
+            name_options_str  += '<option value="Prabhu BRANCH Ilam">Prabhu BRANCH Ilam</option>';
+            name_options_str  += '<option value="Prabhu Bank">Prabhu Bank</option>';
+            name_options_str  += '<option value="Prajna Sadan School">Prajna Sadan School</option>';
+            name_options_str  += '<option value="Primary Health Care Center (Godak)">Primary Health Care Center (Godak)</option>';
+            name_options_str  += '<option value="Prime BRANCH BIBLYATE BRANCH">Prime BRANCH BIBLYATE BRANCH</option>';
+            name_options_str  += '<option value="Prime Commercial Bank Limited">Prime Commercial Bank Limited</option>';
+            name_options_str  += '<option value="Purna Smarak Ma Vi">Purna Smarak Ma Vi</option>';
+            name_options_str  += '<option value="RBB BRANCH Illambazar">RBB BRANCH Illambazar</option>';
+            name_options_str  += '<option value="Rastriya Banijya Bank">Rastriya Banijya Bank</option>';
+            name_options_str  += '<option value="Ratna Mai Vidya Mandir Boarding School">Ratna Mai Vidya Mandir Boarding School</option>';
+            name_options_str  += '<option value="Ratna Mai school">Ratna Mai school</option>';
+            name_options_str  += '<option value="SBL BLB Illam">SBL BLB Illam</option>';
+            name_options_str  += '<option value="SBL BLB Phikkal">SBL BLB Phikkal</option>';
+            name_options_str  += '<option value="Sahara Nepal SACCOS Ilam Service Centre">Sahara Nepal SACCOS Ilam Service Centre</option>';
+            name_options_str  += '<option value="Samata School Ilam">Samata School Ilam</option>';
+            name_options_str  += '<option value="Sanima Bank Ltd. Mai Branch">Sanima Bank Ltd. Mai Branch</option>';
+            name_options_str  += '<option value="Saptakoshi Development Bank Limited">Saptakoshi Development Bank Limited</option>';
+            name_options_str  += '<option value="Satyanarayan Basic School">Satyanarayan Basic School</option>';
+            name_options_str  += '<option value="Seti Devi Temple">Seti Devi Temple</option>';
+            name_options_str  += '<option value="Shree Arunodaya Secondary Boarding School, Laxmipur-8,Ilam">Shree Arunodaya Secondary Boarding School, Laxmipur-8,Ilam</option>';
+            name_options_str  += '<option value="Shree Bina Pani Secondary School">Shree Bina Pani Secondary School</option>';
+            name_options_str  += '<option value="Shree Devkota Primary School">Shree Devkota Primary School</option>';
+            name_options_str  += '<option value="Shree Krishna Secondary School">Shree Krishna Secondary School</option>';
+            name_options_str  += '<option value="Shree Nepal Academy">Shree Nepal Academy</option>';
+            name_options_str  += '<option value="Shree Saraswati Secondary School Batase">Shree Saraswati Secondary School Batase</option>';
+            name_options_str  += '<option value="Shree Saraswati Secondary School, Soyang">Shree Saraswati Secondary School, Soyang</option>';
+            name_options_str  += '<option value="Shree laxmi adarsha secondary school">Shree laxmi adarsha secondary school</option>';
+            name_options_str  += '<option value="Shree purna smarak higher secondary school">Shree purna smarak higher secondary school</option>';
+            name_options_str  += '<option value="Siddha Devi Mandir">Siddha Devi Mandir</option>';
+            name_options_str  += '<option value="Siddhartha Bank Ltd. Ilam Branch">Siddhartha Bank Ltd. Ilam Branch</option>';
+            name_options_str  += '<option value="Singfring School">Singfring School</option>';
+            name_options_str  += '<option value="Singhabahini Temple">Singhabahini Temple</option>';
+            name_options_str  += '<option value="State Bank of India">State Bank of India</option>';
+            name_options_str  += '<option value="Summit BRANCH Ilam Branch">Summit BRANCH Ilam Branch</option>';
+            name_options_str  += '<option value="Sunrise Bank Ltd. Illam Branch">Sunrise Bank Ltd. Illam Branch</option>';
+            name_options_str  += '<option value="Swalamban BRANCH Ilam">Swalamban BRANCH Ilam</option>';
+            name_options_str  += '<option value="bal kanya ma vi">bal kanya ma vi</option>';
+            name_options_str  += '<option value="saptakoshi BRANCH Ilam">saptakoshi BRANCH Ilam</option>';
+            name_options_str  += '<option value="saraswati basic school todke ilam">saraswati basic school todke ilam</option>';
+            name_options_str  += '<option value="shree sumbek secondary school">shree sumbek secondary school</option>';
+            name_options_str  += '<option value="shri Adarsha Lower Secondary School">shri Adarsha Lower Secondary School</option>';
+            name_options_str  += '<option value="suryajyoti college">suryajyoti college</option>';
+            name_options_str  += '<option value="पाथिभरा माता ६६७ Sano Pathibhara">पाथिभरा माता ६६७ Sano Pathibhara</option>';
+            name_options_str  += '<option value="भानु भक्त उच्च माध्यमिक विद्यालय Bhanu Bhakta Higher Secondary Schools">भानु भक्त उच्च माध्यमिक विद्यालय Bhanu Bhakta Higher Secondary Schools</option>';
+            name_options_str  += '<option value="श्रिजनसील माध्यमिक बिध्यालय">श्रिजनसील माध्यमिक बिध्यालय</option>';
+            name_options_str  += '<option value="सरस्वती माध्यामिक स्कूल ६६७ खेल मैदान">सरस्वती माध्यामिक स्कूल ६६७ खेल मैदान</option>';
+            sel_name.innerHTML = name_options_str;
+            div_name.appendChild(sel_name);
+            var lab_name = document.createElement('div');
+            lab_name.innerHTML = 'name';
+            lab_name.className = 'filterlabel';
+            div_name.appendChild(lab_name);
+            var reset_name = document.createElement('div');
+            reset_name.innerHTML = 'clear filter';
+            reset_name.className = 'filterlabel';
+            reset_name.onclick = function() {
+                var options = document.getElementById("sel_name").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_name.appendChild(reset_name);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_opening_hours = document.createElement('div');
+            div_opening_hours.id = "div_opening_hours";
+            div_opening_hours.className= "filterselect";
+            document.getElementById("menu").appendChild(div_opening_hours);
+            sel_opening_hours = document.createElement('select');
+            sel_opening_hours.multiple = true;
+            sel_opening_hours.size = 9;
+            sel_opening_hours.id = "sel_opening_hours";
+            var opening_hours_options_str = "<option value='' unselected></option>";
+            sel_opening_hours.onchange = function(){filterFunc()};
+            opening_hours_options_str  += '<option value="24/7">24/7</option>';
+            opening_hours_options_str  += '<option value="Su-Fr 09:00-16:00">Su-Fr 09:00-16:00</option>';
+            opening_hours_options_str  += '<option value="Su-Fr 09:00-17:00">Su-Fr 09:00-17:00</option>';
+            opening_hours_options_str  += '<option value="Su-Fr 09:00-18:00">Su-Fr 09:00-18:00</option>';
+            opening_hours_options_str  += '<option value="Su-Fr 10:00-13:00">Su-Fr 10:00-13:00</option>';
+            opening_hours_options_str  += '<option value="Su-Fr 10:00-16:00">Su-Fr 10:00-16:00</option>';
+            opening_hours_options_str  += '<option value="Su-Fr 10:00-17:00">Su-Fr 10:00-17:00</option>';
+            opening_hours_options_str  += '<option value="Su-Fr 10:15-16:15">Su-Fr 10:15-16:15</option>';
+            opening_hours_options_str  += '<option value="Su-Th 10:00-16:00; Fr 10:00-13:30">Su-Th 10:00-16:00; Fr 10:00-13:30</option>';
+            sel_opening_hours.innerHTML = opening_hours_options_str;
+            div_opening_hours.appendChild(sel_opening_hours);
+            var lab_opening_hours = document.createElement('div');
+            lab_opening_hours.innerHTML = 'opening_hours';
+            lab_opening_hours.className = 'filterlabel';
+            div_opening_hours.appendChild(lab_opening_hours);
+            var reset_opening_hours = document.createElement('div');
+            reset_opening_hours.innerHTML = 'clear filter';
+            reset_opening_hours.className = 'filterlabel';
+            reset_opening_hours.onclick = function() {
+                var options = document.getElementById("sel_opening_hours").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_opening_hours.appendChild(reset_opening_hours);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_emergency = document.createElement('div');
+            div_emergency.id = "div_emergency";
+            div_emergency.className= "filterselect";
+            document.getElementById("menu").appendChild(div_emergency);
+            sel_emergency = document.createElement('select');
+            sel_emergency.multiple = true;
+            sel_emergency.size = 1;
+            sel_emergency.id = "sel_emergency";
+            var emergency_options_str = "<option value='' unselected></option>";
+            sel_emergency.onchange = function(){filterFunc()};
+            emergency_options_str  += '<option value="no">no</option>';
+            sel_emergency.innerHTML = emergency_options_str;
+            div_emergency.appendChild(sel_emergency);
+            var lab_emergency = document.createElement('div');
+            lab_emergency.innerHTML = 'emergency';
+            lab_emergency.className = 'filterlabel';
+            div_emergency.appendChild(lab_emergency);
+            var reset_emergency = document.createElement('div');
+            reset_emergency.innerHTML = 'clear filter';
+            reset_emergency.className = 'filterlabel';
+            reset_emergency.onclick = function() {
+                var options = document.getElementById("sel_emergency").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_emergency.appendChild(reset_emergency);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_internet_access = document.createElement('div');
+            div_internet_access.id = "div_internet_access";
+            div_internet_access.className= "filterselect";
+            document.getElementById("menu").appendChild(div_internet_access);
+            sel_internet_access = document.createElement('select');
+            sel_internet_access.multiple = true;
+            sel_internet_access.size = 1;
+            sel_internet_access.id = "sel_internet_access";
+            var internet_access_options_str = "<option value='' unselected></option>";
+            sel_internet_access.onchange = function(){filterFunc()};
+            internet_access_options_str  += '<option value="wlan">wlan</option>';
+            sel_internet_access.innerHTML = internet_access_options_str;
+            div_internet_access.appendChild(sel_internet_access);
+            var lab_internet_access = document.createElement('div');
+            lab_internet_access.innerHTML = 'internet_access';
+            lab_internet_access.className = 'filterlabel';
+            div_internet_access.appendChild(lab_internet_access);
+            var reset_internet_access = document.createElement('div');
+            reset_internet_access.innerHTML = 'clear filter';
+            reset_internet_access.className = 'filterlabel';
+            reset_internet_access.onclick = function() {
+                var options = document.getElementById("sel_internet_access").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_internet_access.appendChild(reset_internet_access);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_operatortype = document.createElement('div');
+            div_operatortype.id = "div_operatortype";
+            div_operatortype.className= "filterselect";
+            document.getElementById("menu").appendChild(div_operatortype);
+            sel_operatortype = document.createElement('select');
+            sel_operatortype.multiple = true;
+            sel_operatortype.size = 1;
+            sel_operatortype.id = "sel_operatortype";
+            var operatortype_options_str = "<option value='' unselected></option>";
+            sel_operatortype.onchange = function(){filterFunc()};
+            operatortype_options_str  += '<option value="government">government</option>';
+            sel_operatortype.innerHTML = operatortype_options_str;
+            div_operatortype.appendChild(sel_operatortype);
+            var lab_operatortype = document.createElement('div');
+            lab_operatortype.innerHTML = 'operator:type';
+            lab_operatortype.className = 'filterlabel';
+            div_operatortype.appendChild(lab_operatortype);
+            var reset_operatortype = document.createElement('div');
+            reset_operatortype.innerHTML = 'clear filter';
+            reset_operatortype.className = 'filterlabel';
+            reset_operatortype.onclick = function() {
+                var options = document.getElementById("sel_operatortype").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_operatortype.appendChild(reset_operatortype);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_building = document.createElement('div');
+            div_building.id = "div_building";
+            div_building.className= "filterselect";
+            document.getElementById("menu").appendChild(div_building);
+            sel_building = document.createElement('select');
+            sel_building.multiple = true;
+            sel_building.size = 1;
+            sel_building.id = "sel_building";
+            var building_options_str = "<option value='' unselected></option>";
+            sel_building.onchange = function(){filterFunc()};
+            building_options_str  += '<option value="yes">yes</option>';
+            sel_building.innerHTML = building_options_str;
+            div_building.appendChild(sel_building);
+            var lab_building = document.createElement('div');
+            lab_building.innerHTML = 'building';
+            lab_building.className = 'filterlabel';
+            div_building.appendChild(lab_building);
+            var reset_building = document.createElement('div');
+            reset_building.innerHTML = 'clear filter';
+            reset_building.className = 'filterlabel';
+            reset_building.onclick = function() {
+                var options = document.getElementById("sel_building").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_building.appendChild(reset_building);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_description = document.createElement('div');
+            div_description.id = "div_description";
+            div_description.className= "filterselect";
+            document.getElementById("menu").appendChild(div_description);
+            sel_description = document.createElement('select');
+            sel_description.multiple = true;
+            sel_description.size = 1;
+            sel_description.id = "sel_description";
+            var description_options_str = "<option value='' unselected></option>";
+            sel_description.onchange = function(){filterFunc()};
+            description_options_str  += '<option value="School">School</option>';
+            sel_description.innerHTML = description_options_str;
+            div_description.appendChild(sel_description);
+            var lab_description = document.createElement('div');
+            lab_description.innerHTML = 'description';
+            lab_description.className = 'filterlabel';
+            div_description.appendChild(lab_description);
+            var reset_description = document.createElement('div');
+            reset_description.innerHTML = 'clear filter';
+            reset_description.className = 'filterlabel';
+            reset_description.onclick = function() {
+                var options = document.getElementById("sel_description").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_description.appendChild(reset_description);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_religion = document.createElement('div');
+            div_religion.id = "div_religion";
+            div_religion.className= "filterselect";
+            document.getElementById("menu").appendChild(div_religion);
+            sel_religion = document.createElement('select');
+            sel_religion.multiple = true;
+            sel_religion.size = 3;
+            sel_religion.id = "sel_religion";
+            var religion_options_str = "<option value='' unselected></option>";
+            sel_religion.onchange = function(){filterFunc()};
+            religion_options_str  += '<option value="buddhist">buddhist</option>';
+            religion_options_str  += '<option value="hindu">hindu</option>';
+            religion_options_str  += '<option value="none">none</option>';
+            sel_religion.innerHTML = religion_options_str;
+            div_religion.appendChild(sel_religion);
+            var lab_religion = document.createElement('div');
+            lab_religion.innerHTML = 'religion';
+            lab_religion.className = 'filterlabel';
+            div_religion.appendChild(lab_religion);
+            var reset_religion = document.createElement('div');
+            reset_religion.innerHTML = 'clear filter';
+            reset_religion.className = 'filterlabel';
+            reset_religion.onclick = function() {
+                var options = document.getElementById("sel_religion").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_religion.appendChild(reset_religion);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_healthcare = document.createElement('div');
+            div_healthcare.id = "div_healthcare";
+            div_healthcare.className= "filterselect";
+            document.getElementById("menu").appendChild(div_healthcare);
+            sel_healthcare = document.createElement('select');
+            sel_healthcare.multiple = true;
+            sel_healthcare.size = 1;
+            sel_healthcare.id = "sel_healthcare";
+            var healthcare_options_str = "<option value='' unselected></option>";
+            sel_healthcare.onchange = function(){filterFunc()};
+            healthcare_options_str  += '<option value="hospital">hospital</option>';
+            sel_healthcare.innerHTML = healthcare_options_str;
+            div_healthcare.appendChild(sel_healthcare);
+            var lab_healthcare = document.createElement('div');
+            lab_healthcare.innerHTML = 'healthcare';
+            lab_healthcare.className = 'filterlabel';
+            div_healthcare.appendChild(lab_healthcare);
+            var reset_healthcare = document.createElement('div');
+            reset_healthcare.innerHTML = 'clear filter';
+            reset_healthcare.className = 'filterlabel';
+            reset_healthcare.onclick = function() {
+                var options = document.getElementById("sel_healthcare").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_healthcare.appendChild(reset_healthcare);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_highway = document.createElement('div');
+            div_highway.id = "div_highway";
+            div_highway.className= "filterselect";
+            document.getElementById("menu").appendChild(div_highway);
+            sel_highway = document.createElement('select');
+            sel_highway.multiple = true;
+            sel_highway.size = 1;
+            sel_highway.id = "sel_highway";
+            var highway_options_str = "<option value='' unselected></option>";
+            sel_highway.onchange = function(){filterFunc()};
+            highway_options_str  += '<option value="motorway_junction">motorway_junction</option>';
+            sel_highway.innerHTML = highway_options_str;
+            div_highway.appendChild(sel_highway);
+            var lab_highway = document.createElement('div');
+            lab_highway.innerHTML = 'highway';
+            lab_highway.className = 'filterlabel';
+            div_highway.appendChild(lab_highway);
+            var reset_highway = document.createElement('div');
+            reset_highway.innerHTML = 'clear filter';
+            reset_highway.className = 'filterlabel';
+            reset_highway.onclick = function() {
+                var options = document.getElementById("sel_highway").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_highway.appendChild(reset_highway);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_nameen = document.createElement('div');
+            div_nameen.id = "div_nameen";
+            div_nameen.className= "filterselect";
+            document.getElementById("menu").appendChild(div_nameen);
+            sel_nameen = document.createElement('select');
+            sel_nameen.multiple = true;
+            sel_nameen.size = 10;
+            sel_nameen.id = "sel_nameen";
+            var nameen_options_str = "<option value='' unselected></option>";
+            sel_nameen.onchange = function(){filterFunc()};
+            nameen_options_str  += '<option value="Agricultural Development Bank">Agricultural Development Bank</option>';
+            nameen_options_str  += '<option value="Banasthali School">Banasthali School</option>';
+            nameen_options_str  += '<option value="Ekatappa Ayruvedic Hospital">Ekatappa Ayruvedic Hospital</option>';
+            nameen_options_str  += '<option value="Global IME Bank Phikkal Branch">Global IME Bank Phikkal Branch</option>';
+            nameen_options_str  += '<option value="Hariyali Resham Secondary English Boarding School">Hariyali Resham Secondary English Boarding School</option>';
+            nameen_options_str  += '<option value="Ilam New Light English Secondary School">Ilam New Light English Secondary School</option>';
+            nameen_options_str  += '<option value="Kumari Bank Fikkal Branch">Kumari Bank Fikkal Branch</option>';
+            nameen_options_str  += '<option value="Madan Jyoti Primary School">Madan Jyoti Primary School</option>';
+            nameen_options_str  += '<option value="Narayan Basic School Ilam 10, Ilam">Narayan Basic School Ilam 10, Ilam</option>';
+            nameen_options_str  += '<option value="Naya Bazar Monastery">Naya Bazar Monastery</option>';
+            nameen_options_str  += '<option value="Peace Land National Academy">Peace Land National Academy</option>';
+            nameen_options_str  += '<option value="Primary Health Care Center (Godak)">Primary Health Care Center (Godak)</option>';
+            nameen_options_str  += '<option value="Rastriya Banijya Bank">Rastriya Banijya Bank</option>';
+            nameen_options_str  += '<option value="Shivalaya Mandir">Shivalaya Mandir</option>';
+            nameen_options_str  += '<option value="Shree Janata Secondary School">Shree Janata Secondary School</option>';
+            nameen_options_str  += '<option value="Shree motiram ma.bi">Shree motiram ma.bi</option>';
+            nameen_options_str  += '<option value="Siddhartha Bank Phikkal Branch">Siddhartha Bank Phikkal Branch</option>';
+            nameen_options_str  += '<option value="Singha Devi">Singha Devi</option>';
+            nameen_options_str  += '<option value="करफोक विद्यामन्दिर बहुमुखि महाविद्यालय">करफोक विद्यामन्दिर बहुमुखि महाविद्यालय</option>';
+            nameen_options_str  += '<option value="पाेखरि स्कुल">पाेखरि स्कुल</option>';
+            nameen_options_str  += '<option value="सिंह देवी माद्यमिक विद्यालय">सिंह देवी माद्यमिक विद्यालय</option>';
+            sel_nameen.innerHTML = nameen_options_str;
+            div_nameen.appendChild(sel_nameen);
+            var lab_nameen = document.createElement('div');
+            lab_nameen.innerHTML = 'name:en';
+            lab_nameen.className = 'filterlabel';
+            div_nameen.appendChild(lab_nameen);
+            var reset_nameen = document.createElement('div');
+            reset_nameen.innerHTML = 'clear filter';
+            reset_nameen.className = 'filterlabel';
+            reset_nameen.onclick = function() {
+                var options = document.getElementById("sel_nameen").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_nameen.appendChild(reset_nameen);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_operator = document.createElement('div');
+            div_operator.id = "div_operator";
+            div_operator.className= "filterselect";
+            document.getElementById("menu").appendChild(div_operator);
+            sel_operator = document.createElement('select');
+            sel_operator.multiple = true;
+            sel_operator.size = 8;
+            sel_operator.id = "sel_operator";
+            var operator_options_str = "<option value='' unselected></option>";
+            sel_operator.onchange = function(){filterFunc()};
+            operator_options_str  += '<option value="Bhawani Aadharbhut School">Bhawani Aadharbhut School</option>';
+            operator_options_str  += '<option value="Birendra Ma.Bi">Birendra Ma.Bi</option>';
+            operator_options_str  += '<option value="Kerabari School">Kerabari School</option>';
+            operator_options_str  += '<option value="Khem Dhakal">Khem Dhakal</option>';
+            operator_options_str  += '<option value="Krishna Aashram School">Krishna Aashram School</option>';
+            operator_options_str  += '<option value="Mai Municipality">Mai Municipality</option>';
+            operator_options_str  += '<option value="Rabin Lohani">Rabin Lohani</option>';
+            operator_options_str  += '<option value="सरस्वती माध्यामिक स्कूल">सरस्वती माध्यामिक स्कूल</option>';
+            sel_operator.innerHTML = operator_options_str;
+            div_operator.appendChild(sel_operator);
+            var lab_operator = document.createElement('div');
+            lab_operator.innerHTML = 'operator';
+            lab_operator.className = 'filterlabel';
+            div_operator.appendChild(lab_operator);
+            var reset_operator = document.createElement('div');
+            reset_operator.innerHTML = 'clear filter';
+            reset_operator.className = 'filterlabel';
+            reset_operator.onclick = function() {
+                var options = document.getElementById("sel_operator").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_operator.appendChild(reset_operator);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_namene = document.createElement('div');
+            div_namene.id = "div_namene";
+            div_namene.className= "filterselect";
+            document.getElementById("menu").appendChild(div_namene);
+            sel_namene = document.createElement('select');
+            sel_namene.multiple = true;
+            sel_namene.size = 9;
+            sel_namene.id = "sel_namene";
+            var namene_options_str = "<option value='' unselected></option>";
+            sel_namene.onchange = function(){filterFunc()};
+            namene_options_str  += '<option value="करफोक स्कुल६६७">करफोक स्कुल६६७</option>';
+            namene_options_str  += '<option value="जिल्ला अस्पताल ईलाम">जिल्ला अस्पताल ईलाम</option>';
+            namene_options_str  += '<option value="नन्द माध्यमिक विद्यालय गोदक">नन्द माध्यमिक विद्यालय गोदक</option>';
+            namene_options_str  += '<option value="पञ्चकन्या मन्दिर ८६६७">पञ्चकन्या मन्दिर ८६६७</option>';
+            namene_options_str  += '<option value="पुर्ण स्मारक माध्यमिक विद्यालय गोदक ईलाम">पुर्ण स्मारक माध्यमिक विद्यालय गोदक ईलाम</option>';
+            namene_options_str  += '<option value="पेमित बाल विकास केन्द्र गोदक जौवारी">पेमित बाल विकास केन्द्र गोदक जौवारी</option>';
+            namene_options_str  += '<option value="भवानी आधारभुत विद्यालय माघे स्कूल ७६८६६७">भवानी आधारभुत विद्यालय माघे स्कूल ७६८६६७</option>';
+            namene_options_str  += '<option value="माघे गाँउ">माघे गाँउ</option>';
+            namene_options_str  += '<option value="हरिहर मेमोरियल स्कूल">हरिहर मेमोरियल स्कूल</option>';
+            sel_namene.innerHTML = namene_options_str;
+            div_namene.appendChild(sel_namene);
+            var lab_namene = document.createElement('div');
+            lab_namene.innerHTML = 'name:ne';
+            lab_namene.className = 'filterlabel';
+            div_namene.appendChild(lab_namene);
+            var reset_namene = document.createElement('div');
+            reset_namene.innerHTML = 'clear filter';
+            reset_namene.className = 'filterlabel';
+            reset_namene.onclick = function() {
+                var options = document.getElementById("sel_namene").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_namene.appendChild(reset_namene);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_addrstreet = document.createElement('div');
+            div_addrstreet.id = "div_addrstreet";
+            div_addrstreet.className= "filterselect";
+            document.getElementById("menu").appendChild(div_addrstreet);
+            sel_addrstreet = document.createElement('select');
+            sel_addrstreet.multiple = true;
+            sel_addrstreet.size = 10;
+            sel_addrstreet.id = "sel_addrstreet";
+            var addrstreet_options_str = "<option value='' unselected></option>";
+            sel_addrstreet.onchange = function(){filterFunc()};
+            addrstreet_options_str  += '<option value="Bhawani Marga भवानी मार्ग ८६६७">Bhawani Marga भवानी मार्ग ८६६७</option>';
+            addrstreet_options_str  += '<option value="Danabari">Danabari</option>';
+            addrstreet_options_str  += '<option value="Gairi Gaun">Gairi Gaun</option>';
+            addrstreet_options_str  += '<option value="Gattha">Gattha</option>';
+            addrstreet_options_str  += '<option value="Godak Ilam">Godak Ilam</option>';
+            addrstreet_options_str  += '<option value="Ilam Nepal">Ilam Nepal</option>';
+            addrstreet_options_str  += '<option value="Jaubari">Jaubari</option>';
+            addrstreet_options_str  += '<option value="Kalapani Maghe road">Kalapani Maghe road</option>';
+            addrstreet_options_str  += '<option value="Lalkhola">Lalkhola</option>';
+            addrstreet_options_str  += '<option value="Mangalabare">Mangalabare</option>';
+            addrstreet_options_str  += '<option value="Phikkal Bazar">Phikkal Bazar</option>';
+            addrstreet_options_str  += '<option value="Shikari Bhangyang">Shikari Bhangyang</option>';
+            addrstreet_options_str  += '<option value="majbari">majbari</option>';
+            addrstreet_options_str  += '<option value="ईलाम">ईलाम</option>';
+            addrstreet_options_str  += '<option value="भवानी मार्ग">भवानी मार्ग</option>';
+            addrstreet_options_str  += '<option value="मेची राजमार्ग">मेची राजमार्ग</option>';
+            addrstreet_options_str  += '<option value="शिकारि भञ्ज्याङ्ग">शिकारि भञ्ज्याङ्ग</option>';
+            sel_addrstreet.innerHTML = addrstreet_options_str;
+            div_addrstreet.appendChild(sel_addrstreet);
+            var lab_addrstreet = document.createElement('div');
+            lab_addrstreet.innerHTML = 'addr:street';
+            lab_addrstreet.className = 'filterlabel';
+            div_addrstreet.appendChild(lab_addrstreet);
+            var reset_addrstreet = document.createElement('div');
+            reset_addrstreet.innerHTML = 'clear filter';
+            reset_addrstreet.className = 'filterlabel';
+            reset_addrstreet.onclick = function() {
+                var options = document.getElementById("sel_addrstreet").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_addrstreet.appendChild(reset_addrstreet);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_contactphone = document.createElement('div');
+            div_contactphone.id = "div_contactphone";
+            div_contactphone.className= "filterselect";
+            document.getElementById("menu").appendChild(div_contactphone);
+            sel_contactphone = document.createElement('select');
+            sel_contactphone.multiple = true;
+            sel_contactphone.size = 1;
+            sel_contactphone.id = "sel_contactphone";
+            var contactphone_options_str = "<option value='' unselected></option>";
+            sel_contactphone.onchange = function(){filterFunc()};
+            contactphone_options_str  += '<option value="027-520033">027-520033</option>';
+            sel_contactphone.innerHTML = contactphone_options_str;
+            div_contactphone.appendChild(sel_contactphone);
+            var lab_contactphone = document.createElement('div');
+            lab_contactphone.innerHTML = 'contact:phone';
+            lab_contactphone.className = 'filterlabel';
+            div_contactphone.appendChild(lab_contactphone);
+            var reset_contactphone = document.createElement('div');
+            reset_contactphone.innerHTML = 'clear filter';
+            reset_contactphone.className = 'filterlabel';
+            reset_contactphone.onclick = function() {
+                var options = document.getElementById("sel_contactphone").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_contactphone.appendChild(reset_contactphone);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_addrpostcode = document.createElement('div');
+            div_addrpostcode.id = "div_addrpostcode";
+            div_addrpostcode.className= "filterselect";
+            document.getElementById("menu").appendChild(div_addrpostcode);
+            sel_addrpostcode = document.createElement('select');
+            sel_addrpostcode.multiple = true;
+            sel_addrpostcode.size = 2;
+            sel_addrpostcode.id = "sel_addrpostcode";
+            var addrpostcode_options_str = "<option value='' unselected></option>";
+            sel_addrpostcode.onchange = function(){filterFunc()};
+            addrpostcode_options_str  += '<option value="57304">57304</option>';
+            addrpostcode_options_str  += '<option value="57312">57312</option>';
+            sel_addrpostcode.innerHTML = addrpostcode_options_str;
+            div_addrpostcode.appendChild(sel_addrpostcode);
+            var lab_addrpostcode = document.createElement('div');
+            lab_addrpostcode.innerHTML = 'addr:postcode';
+            lab_addrpostcode.className = 'filterlabel';
+            div_addrpostcode.appendChild(lab_addrpostcode);
+            var reset_addrpostcode = document.createElement('div');
+            reset_addrpostcode.innerHTML = 'clear filter';
+            reset_addrpostcode.className = 'filterlabel';
+            reset_addrpostcode.onclick = function() {
+                var options = document.getElementById("sel_addrpostcode").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_addrpostcode.appendChild(reset_addrpostcode);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_namehi = document.createElement('div');
+            div_namehi.id = "div_namehi";
+            div_namehi.className= "filterselect";
+            document.getElementById("menu").appendChild(div_namehi);
+            sel_namehi = document.createElement('select');
+            sel_namehi.multiple = true;
+            sel_namehi.size = 2;
+            sel_namehi.id = "sel_namehi";
+            var namehi_options_str = "<option value='' unselected></option>";
+            sel_namehi.onchange = function(){filterFunc()};
+            namehi_options_str  += '<option value="नेपाली">नेपाली</option>';
+            namehi_options_str  += '<option value="श्री जनता प्राथमीक बिध्यालय">श्री जनता प्राथमीक बिध्यालय</option>';
+            sel_namehi.innerHTML = namehi_options_str;
+            div_namehi.appendChild(sel_namehi);
+            var lab_namehi = document.createElement('div');
+            lab_namehi.innerHTML = 'name:hi';
+            lab_namehi.className = 'filterlabel';
+            div_namehi.appendChild(lab_namehi);
+            var reset_namehi = document.createElement('div');
+            reset_namehi.innerHTML = 'clear filter';
+            reset_namehi.className = 'filterlabel';
+            reset_namehi.onclick = function() {
+                var options = document.getElementById("sel_namehi").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_namehi.appendChild(reset_namehi);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_email = document.createElement('div');
+            div_email.id = "div_email";
+            div_email.className= "filterselect";
+            document.getElementById("menu").appendChild(div_email);
+            sel_email = document.createElement('select');
+            sel_email.multiple = true;
+            sel_email.size = 1;
+            sel_email.id = "sel_email";
+            var email_options_str = "<option value='' unselected></option>";
+            sel_email.onchange = function(){filterFunc()};
+            email_options_str  += '<option value="peacelandkarfok@gmail.com">peacelandkarfok@gmail.com</option>';
+            sel_email.innerHTML = email_options_str;
+            div_email.appendChild(sel_email);
+            var lab_email = document.createElement('div');
+            lab_email.innerHTML = 'email';
+            lab_email.className = 'filterlabel';
+            div_email.appendChild(lab_email);
+            var reset_email = document.createElement('div');
+            reset_email.innerHTML = 'clear filter';
+            reset_email.className = 'filterlabel';
+            reset_email.onclick = function() {
+                var options = document.getElementById("sel_email").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_email.appendChild(reset_email);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_osm_type = document.createElement('div');
+            div_osm_type.id = "div_osm_type";
+            div_osm_type.className= "filterselect";
+            document.getElementById("menu").appendChild(div_osm_type);
+            sel_osm_type = document.createElement('select');
+            sel_osm_type.multiple = true;
+            sel_osm_type.size = 1;
+            sel_osm_type.id = "sel_osm_type";
+            var osm_type_options_str = "<option value='' unselected></option>";
+            sel_osm_type.onchange = function(){filterFunc()};
+            osm_type_options_str  += '<option value="node">node</option>';
+            sel_osm_type.innerHTML = osm_type_options_str;
+            div_osm_type.appendChild(sel_osm_type);
+            var lab_osm_type = document.createElement('div');
+            lab_osm_type.innerHTML = 'osm_type';
+            lab_osm_type.className = 'filterlabel';
+            div_osm_type.appendChild(lab_osm_type);
+            var reset_osm_type = document.createElement('div');
+            reset_osm_type.innerHTML = 'clear filter';
+            reset_osm_type.className = 'filterlabel';
+            reset_osm_type.onclick = function() {
+                var options = document.getElementById("sel_osm_type").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_osm_type.appendChild(reset_osm_type);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_atm = document.createElement('div');
+            div_atm.id = "div_atm";
+            div_atm.className= "filterselect";
+            document.getElementById("menu").appendChild(div_atm);
+            sel_atm = document.createElement('select');
+            sel_atm.multiple = true;
+            sel_atm.size = 1;
+            sel_atm.id = "sel_atm";
+            var atm_options_str = "<option value='' unselected></option>";
+            sel_atm.onchange = function(){filterFunc()};
+            atm_options_str  += '<option value="yes">yes</option>';
+            sel_atm.innerHTML = atm_options_str;
+            div_atm.appendChild(sel_atm);
+            var lab_atm = document.createElement('div');
+            lab_atm.innerHTML = 'atm';
+            lab_atm.className = 'filterlabel';
+            div_atm.appendChild(lab_atm);
+            var reset_atm = document.createElement('div');
+            reset_atm.innerHTML = 'clear filter';
+            reset_atm.className = 'filterlabel';
+            reset_atm.onclick = function() {
+                var options = document.getElementById("sel_atm").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_atm.appendChild(reset_atm);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_addrhousenumber = document.createElement('div');
+            div_addrhousenumber.id = "div_addrhousenumber";
+            div_addrhousenumber.className= "filterselect";
+            document.getElementById("menu").appendChild(div_addrhousenumber);
+            sel_addrhousenumber = document.createElement('select');
+            sel_addrhousenumber.multiple = true;
+            sel_addrhousenumber.size = 2;
+            sel_addrhousenumber.id = "sel_addrhousenumber";
+            var addrhousenumber_options_str = "<option value='' unselected></option>";
+            sel_addrhousenumber.onchange = function(){filterFunc()};
+            addrhousenumber_options_str  += '<option value="10">10</option>';
+            addrhousenumber_options_str  += '<option value="Ward No. 9">Ward No. 9</option>';
+            sel_addrhousenumber.innerHTML = addrhousenumber_options_str;
+            div_addrhousenumber.appendChild(sel_addrhousenumber);
+            var lab_addrhousenumber = document.createElement('div');
+            lab_addrhousenumber.innerHTML = 'addr:housenumber';
+            lab_addrhousenumber.className = 'filterlabel';
+            div_addrhousenumber.appendChild(lab_addrhousenumber);
+            var reset_addrhousenumber = document.createElement('div');
+            reset_addrhousenumber.innerHTML = 'clear filter';
+            reset_addrhousenumber.className = 'filterlabel';
+            reset_addrhousenumber.onclick = function() {
+                var options = document.getElementById("sel_addrhousenumber").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_addrhousenumber.appendChild(reset_addrhousenumber);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_osm_id = document.createElement('div');
+            div_osm_id.id = "div_osm_id";
+            div_osm_id.className= "filterselect";
+            document.getElementById("menu").appendChild(div_osm_id);
+            sel_osm_id = document.createElement('select');
+            sel_osm_id.multiple = true;
+            sel_osm_id.size = 10;
+            sel_osm_id.id = "sel_osm_id";
+            var osm_id_options_str = "<option value='' unselected></option>";
+            sel_osm_id.onchange = function(){filterFunc()};
+            osm_id_options_str  += '<option value="2155539563">2155539563</option>';
+            osm_id_options_str  += '<option value="2155539866">2155539866</option>';
+            osm_id_options_str  += '<option value="2155545570">2155545570</option>';
+            osm_id_options_str  += '<option value="2405480536">2405480536</option>';
+            osm_id_options_str  += '<option value="3287679808">3287679808</option>';
+            osm_id_options_str  += '<option value="3385957288">3385957288</option>';
+            osm_id_options_str  += '<option value="4363228192">4363228192</option>';
+            osm_id_options_str  += '<option value="4490866808">4490866808</option>';
+            osm_id_options_str  += '<option value="4634030090">4634030090</option>';
+            osm_id_options_str  += '<option value="4843843245">4843843245</option>';
+            osm_id_options_str  += '<option value="4948873421">4948873421</option>';
+            osm_id_options_str  += '<option value="4984514821">4984514821</option>';
+            osm_id_options_str  += '<option value="4984515021">4984515021</option>';
+            osm_id_options_str  += '<option value="5006554577">5006554577</option>';
+            osm_id_options_str  += '<option value="5075167522">5075167522</option>';
+            osm_id_options_str  += '<option value="5152213421">5152213421</option>';
+            osm_id_options_str  += '<option value="5152214021">5152214021</option>';
+            osm_id_options_str  += '<option value="5165916997">5165916997</option>';
+            osm_id_options_str  += '<option value="5183258114">5183258114</option>';
+            osm_id_options_str  += '<option value="5183286441">5183286441</option>';
+            osm_id_options_str  += '<option value="5197399439">5197399439</option>';
+            osm_id_options_str  += '<option value="5197400317">5197400317</option>';
+            osm_id_options_str  += '<option value="5213573004">5213573004</option>';
+            osm_id_options_str  += '<option value="5330416623">5330416623</option>';
+            osm_id_options_str  += '<option value="5330416626">5330416626</option>';
+            osm_id_options_str  += '<option value="5330416627">5330416627</option>';
+            osm_id_options_str  += '<option value="5330416628">5330416628</option>';
+            osm_id_options_str  += '<option value="5330416629">5330416629</option>';
+            osm_id_options_str  += '<option value="5330416922">5330416922</option>';
+            osm_id_options_str  += '<option value="5727671824">5727671824</option>';
+            osm_id_options_str  += '<option value="5838725085">5838725085</option>';
+            osm_id_options_str  += '<option value="5909064923">5909064923</option>';
+            osm_id_options_str  += '<option value="5933850086">5933850086</option>';
+            osm_id_options_str  += '<option value="5933850089">5933850089</option>';
+            osm_id_options_str  += '<option value="5933851685">5933851685</option>';
+            osm_id_options_str  += '<option value="5933851687">5933851687</option>';
+            osm_id_options_str  += '<option value="6085061687">6085061687</option>';
+            osm_id_options_str  += '<option value="6332107797">6332107797</option>';
+            osm_id_options_str  += '<option value="6554423886">6554423886</option>';
+            osm_id_options_str  += '<option value="6554424086">6554424086</option>';
+            osm_id_options_str  += '<option value="7706514486">7706514486</option>';
+            osm_id_options_str  += '<option value="8356506917">8356506917</option>';
+            osm_id_options_str  += '<option value="8421778717">8421778717</option>';
+            osm_id_options_str  += '<option value="8421778718">8421778718</option>';
+            osm_id_options_str  += '<option value="8625806917">8625806917</option>';
+            osm_id_options_str  += '<option value="8625807018">8625807018</option>';
+            osm_id_options_str  += '<option value="9141869117">9141869117</option>';
+            osm_id_options_str  += '<option value="9141869417">9141869417</option>';
+            osm_id_options_str  += '<option value="9377847959">9377847959</option>';
+            osm_id_options_str  += '<option value="9377861726">9377861726</option>';
+            osm_id_options_str  += '<option value="9547392373">9547392373</option>';
+            osm_id_options_str  += '<option value="9776289249">9776289249</option>';
+            osm_id_options_str  += '<option value="9776289250">9776289250</option>';
+            osm_id_options_str  += '<option value="9776289251">9776289251</option>';
+            osm_id_options_str  += '<option value="9776289252">9776289252</option>';
+            osm_id_options_str  += '<option value="9776289253">9776289253</option>';
+            osm_id_options_str  += '<option value="9776289254">9776289254</option>';
+            osm_id_options_str  += '<option value="9776289255">9776289255</option>';
+            osm_id_options_str  += '<option value="9776289256">9776289256</option>';
+            osm_id_options_str  += '<option value="9776289257">9776289257</option>';
+            osm_id_options_str  += '<option value="9776289258">9776289258</option>';
+            osm_id_options_str  += '<option value="9776289259">9776289259</option>';
+            osm_id_options_str  += '<option value="9776289260">9776289260</option>';
+            osm_id_options_str  += '<option value="9776289261">9776289261</option>';
+            osm_id_options_str  += '<option value="9776289262">9776289262</option>';
+            osm_id_options_str  += '<option value="9776289263">9776289263</option>';
+            osm_id_options_str  += '<option value="9776289264">9776289264</option>';
+            osm_id_options_str  += '<option value="9776289265">9776289265</option>';
+            osm_id_options_str  += '<option value="9776289266">9776289266</option>';
+            osm_id_options_str  += '<option value="9776289267">9776289267</option>';
+            osm_id_options_str  += '<option value="9776289268">9776289268</option>';
+            osm_id_options_str  += '<option value="9776289269">9776289269</option>';
+            osm_id_options_str  += '<option value="9776289270">9776289270</option>';
+            osm_id_options_str  += '<option value="9776289271">9776289271</option>';
+            osm_id_options_str  += '<option value="9776289272">9776289272</option>';
+            osm_id_options_str  += '<option value="9776289273">9776289273</option>';
+            osm_id_options_str  += '<option value="9776289274">9776289274</option>';
+            osm_id_options_str  += '<option value="9776289275">9776289275</option>';
+            osm_id_options_str  += '<option value="9776289276">9776289276</option>';
+            osm_id_options_str  += '<option value="9776289277">9776289277</option>';
+            osm_id_options_str  += '<option value="9776289278">9776289278</option>';
+            osm_id_options_str  += '<option value="9776289279">9776289279</option>';
+            osm_id_options_str  += '<option value="9776289280">9776289280</option>';
+            osm_id_options_str  += '<option value="9776289281">9776289281</option>';
+            osm_id_options_str  += '<option value="9776289282">9776289282</option>';
+            osm_id_options_str  += '<option value="9776289283">9776289283</option>';
+            osm_id_options_str  += '<option value="9776289284">9776289284</option>';
+            osm_id_options_str  += '<option value="9776289285">9776289285</option>';
+            osm_id_options_str  += '<option value="9776289286">9776289286</option>';
+            osm_id_options_str  += '<option value="9776289287">9776289287</option>';
+            osm_id_options_str  += '<option value="9776289288">9776289288</option>';
+            osm_id_options_str  += '<option value="9776289289">9776289289</option>';
+            osm_id_options_str  += '<option value="9776289290">9776289290</option>';
+            osm_id_options_str  += '<option value="9776289291">9776289291</option>';
+            osm_id_options_str  += '<option value="9776289292">9776289292</option>';
+            osm_id_options_str  += '<option value="9776289293">9776289293</option>';
+            osm_id_options_str  += '<option value="9776289294">9776289294</option>';
+            osm_id_options_str  += '<option value="9776289295">9776289295</option>';
+            osm_id_options_str  += '<option value="9776289296">9776289296</option>';
+            osm_id_options_str  += '<option value="9776289297">9776289297</option>';
+            osm_id_options_str  += '<option value="9776289298">9776289298</option>';
+            osm_id_options_str  += '<option value="9776289299">9776289299</option>';
+            osm_id_options_str  += '<option value="9776289300">9776289300</option>';
+            osm_id_options_str  += '<option value="9776289301">9776289301</option>';
+            osm_id_options_str  += '<option value="9776289302">9776289302</option>';
+            osm_id_options_str  += '<option value="9776289303">9776289303</option>';
+            osm_id_options_str  += '<option value="9776289304">9776289304</option>';
+            osm_id_options_str  += '<option value="9776289305">9776289305</option>';
+            osm_id_options_str  += '<option value="9776289306">9776289306</option>';
+            osm_id_options_str  += '<option value="9776289307">9776289307</option>';
+            osm_id_options_str  += '<option value="9776941332">9776941332</option>';
+            osm_id_options_str  += '<option value="9776941333">9776941333</option>';
+            osm_id_options_str  += '<option value="9776941334">9776941334</option>';
+            osm_id_options_str  += '<option value="9776941335">9776941335</option>';
+            osm_id_options_str  += '<option value="9776941336">9776941336</option>';
+            osm_id_options_str  += '<option value="9776941337">9776941337</option>';
+            osm_id_options_str  += '<option value="9776941338">9776941338</option>';
+            osm_id_options_str  += '<option value="9776941339">9776941339</option>';
+            osm_id_options_str  += '<option value="9776941340">9776941340</option>';
+            osm_id_options_str  += '<option value="9776941341">9776941341</option>';
+            osm_id_options_str  += '<option value="9776941342">9776941342</option>';
+            osm_id_options_str  += '<option value="9776941343">9776941343</option>';
+            osm_id_options_str  += '<option value="9776941344">9776941344</option>';
+            osm_id_options_str  += '<option value="9776941345">9776941345</option>';
+            osm_id_options_str  += '<option value="9776941346">9776941346</option>';
+            osm_id_options_str  += '<option value="9776941347">9776941347</option>';
+            osm_id_options_str  += '<option value="9776941348">9776941348</option>';
+            osm_id_options_str  += '<option value="9776941349">9776941349</option>';
+            osm_id_options_str  += '<option value="9776941350">9776941350</option>';
+            osm_id_options_str  += '<option value="9776941352">9776941352</option>';
+            osm_id_options_str  += '<option value="9776941353">9776941353</option>';
+            osm_id_options_str  += '<option value="9776941354">9776941354</option>';
+            osm_id_options_str  += '<option value="9776941355">9776941355</option>';
+            osm_id_options_str  += '<option value="9776941356">9776941356</option>';
+            osm_id_options_str  += '<option value="9802461404">9802461404</option>';
+            osm_id_options_str  += '<option value="9802461405">9802461405</option>';
+            osm_id_options_str  += '<option value="9802461406">9802461406</option>';
+            osm_id_options_str  += '<option value="9802461407">9802461407</option>';
+            osm_id_options_str  += '<option value="9802461408">9802461408</option>';
+            osm_id_options_str  += '<option value="9802461409">9802461409</option>';
+            osm_id_options_str  += '<option value="9802461410">9802461410</option>';
+            osm_id_options_str  += '<option value="9802461411">9802461411</option>';
+            osm_id_options_str  += '<option value="9802461412">9802461412</option>';
+            osm_id_options_str  += '<option value="9802461413">9802461413</option>';
+            osm_id_options_str  += '<option value="9802461414">9802461414</option>';
+            osm_id_options_str  += '<option value="9802461415">9802461415</option>';
+            osm_id_options_str  += '<option value="9802461416">9802461416</option>';
+            osm_id_options_str  += '<option value="9802570317">9802570317</option>';
+            osm_id_options_str  += '<option value="9802570318">9802570318</option>';
+            osm_id_options_str  += '<option value="9802570319">9802570319</option>';
+            osm_id_options_str  += '<option value="9802570320">9802570320</option>';
+            osm_id_options_str  += '<option value="9802570321">9802570321</option>';
+            osm_id_options_str  += '<option value="9802570322">9802570322</option>';
+            osm_id_options_str  += '<option value="9802570323">9802570323</option>';
+            osm_id_options_str  += '<option value="9802570324">9802570324</option>';
+            osm_id_options_str  += '<option value="9802570325">9802570325</option>';
+            osm_id_options_str  += '<option value="9802570326">9802570326</option>';
+            osm_id_options_str  += '<option value="9802570327">9802570327</option>';
+            osm_id_options_str  += '<option value="9802570328">9802570328</option>';
+            osm_id_options_str  += '<option value="9802570329">9802570329</option>';
+            osm_id_options_str  += '<option value="9802570330">9802570330</option>';
+            osm_id_options_str  += '<option value="9802570331">9802570331</option>';
+            osm_id_options_str  += '<option value="9802570332">9802570332</option>';
+            osm_id_options_str  += '<option value="9802570333">9802570333</option>';
+            osm_id_options_str  += '<option value="9802570334">9802570334</option>';
+            osm_id_options_str  += '<option value="9802570335">9802570335</option>';
+            osm_id_options_str  += '<option value="9802570336">9802570336</option>';
+            osm_id_options_str  += '<option value="9813020175">9813020175</option>';
+            sel_osm_id.innerHTML = osm_id_options_str;
+            div_osm_id.appendChild(sel_osm_id);
+            var lab_osm_id = document.createElement('div');
+            lab_osm_id.innerHTML = 'osm_id';
+            lab_osm_id.className = 'filterlabel';
+            div_osm_id.appendChild(lab_osm_id);
+            var reset_osm_id = document.createElement('div');
+            reset_osm_id.innerHTML = 'clear filter';
+            reset_osm_id.className = 'filterlabel';
+            reset_osm_id.onclick = function() {
+                var options = document.getElementById("sel_osm_id").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_osm_id.appendChild(reset_osm_id);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_phone = document.createElement('div');
+            div_phone.id = "div_phone";
+            div_phone.className= "filterselect";
+            document.getElementById("menu").appendChild(div_phone);
+            sel_phone = document.createElement('select');
+            sel_phone.multiple = true;
+            sel_phone.size = 3;
+            sel_phone.id = "sel_phone";
+            var phone_options_str = "<option value='' unselected></option>";
+            sel_phone.onchange = function(){filterFunc()};
+            phone_options_str  += '<option value="+977-027555052;+977-027540234;+977-9852680211">+977-027555052;+977-027540234;+977-9852680211</option>';
+            phone_options_str  += '<option value="027412053">027412053</option>';
+            phone_options_str  += '<option value="9843602069">9843602069</option>';
+            sel_phone.innerHTML = phone_options_str;
+            div_phone.appendChild(sel_phone);
+            var lab_phone = document.createElement('div');
+            lab_phone.innerHTML = 'phone';
+            lab_phone.className = 'filterlabel';
+            div_phone.appendChild(lab_phone);
+            var reset_phone = document.createElement('div');
+            reset_phone.innerHTML = 'clear filter';
+            reset_phone.className = 'filterlabel';
+            reset_phone.onclick = function() {
+                var options = document.getElementById("sel_phone").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_phone.appendChild(reset_phone);
+        </script>
+    </body>
+</html>
